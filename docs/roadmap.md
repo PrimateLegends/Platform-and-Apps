@@ -15,6 +15,8 @@ but may change. **Planned** is not built yet.
 | Agents | [OpenClaw skill](../integrations/openclaw/) to check a wallet's vault and daily claim | Experimental |
 | Agents | [ChatGPT app](../integrations/chatgpt/) to browse clans, lore and your collection from a chat | Planned |
 | Agents | MCP server exposing the read-only vault API to any agent | Planned |
+| Game | Card Battles rules engine (rounds, Ki, keywords, Heroes, scoring) | In development |
+| Game | Seasonal Honor on-chain (HonorLedger) | Draft |
 | On-chain | Sealed cards airdropped as ERC-1155 tokens on Ethereum | Planned |
 | On-chain | Primate Legends collection contract (3,003 tokens) | Planned |
 | On-chain | Verified contract source published in [`contracts/`](../contracts/) | Planned |

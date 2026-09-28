@@ -33,7 +33,10 @@ for (const file of walk(ROOT)) {
   // Asset paths are written from the site root (public/..., src/...).
   for (const m of text.matchAll(/["'(](?:\.\/)?((?:public|src)\/[\w./-]+\.(?:png|css|js))/g)) {
     refs++;
-    if (!fs.existsSync(path.join(ROOT, m[1]))) problems.push(`${rel}: missing ${m[1]}`);
+    // Paths are relative to the app folder (apps/<name>/) that holds the page.
+    const app = rel.match(/^apps\/[^/]+\//);
+    const base = app ? path.join(ROOT, app[0]) : ROOT;
+    if (!fs.existsSync(path.join(base, m[1]))) problems.push(`${rel}: missing ${m[1]}`);
   }
 }
 

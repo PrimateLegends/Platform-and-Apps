@@ -9,6 +9,7 @@ verified Solidity source and addresses of:
 | --- | --- | --- |
 | Primate Legends | ERC-721 | The 3,003 warriors |
 | Legendary Cards (sealed) | ERC-1155 | Sealed cards airdropped from the off-chain vault |
+| HonorLedger | Merkle claims | Seasonal Card Battles Honor ([draft](HonorLedger.sol), not deployed) |
 
 No contract is deployed yet. Until an address is published here and verified
 on Etherscan, any contract claiming to be Primate Legends is not ours.

@@ -1,13 +1,14 @@
 {
-  "name": "legendary-cards-preview",
-  "version": "0.4.0",
+  "name": "primate-legends-platform-apps",
+  "version": "0.5.0",
   "private": true,
-  "description": "UI preview of the Primate Legends card vault: sealed packs, daily claims with a 7-day streak, card hints and the collection grid.",
+  "description": "Primate Legends Platform & Apps: Legendary Cards UI preview, Card Battles rules engine and integrations.",
   "homepage": "https://primatelegends.world",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "scripts": {
     "start": "node scripts/serve.mjs 8080",
+    "test": "node --test apps/card-battles/test/engine.test.js",
     "check": "node scripts/check.mjs"
   },
   "engines": {

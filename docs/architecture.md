@@ -22,6 +22,8 @@ flowchart LR
 
 ## Source layout
 
+Legendary Cards preview (`apps/legendary-cards-preview/`):
+
 | Path | What it does |
 | --- | --- |
 | `src/data/catalog.js` | Clans, rarities, card types, packs and their odds |
@@ -55,6 +57,13 @@ flowchart LR
 ## Local development
 
 ```bash
-npm start        # http://localhost:8080
+npm start        # http://localhost:8080/apps/legendary-cards-preview/
 npm run check    # assets resolve, no secrets or local paths
 ```
+
+## Card Battles
+
+The game's rules engine lives in `apps/card-battles/` and is documented in
+[card-battles.md](card-battles.md). It is a pure state machine: `apply(state, action)` returns
+a new state, and `replay({ seed, decks, actions })` rebuilds any match from scratch. That is
+what lets the server verify ranked results before their Honor is committed on-chain.
