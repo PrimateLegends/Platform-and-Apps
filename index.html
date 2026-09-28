@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<!-- Primate Legends · crafted by Crovy & Yuki -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Primate Legends — Legendary Cards UI preview</title>
+<meta name="description" content="Open-source UI preview of the Primate Legends card vault: sealed packs, daily claims with a 7-day streak, card hints and the collection grid.">
+<link rel="icon" href="public/img/brand/favicon-32.png">
+<link rel="apple-touch-icon" href="public/img/brand/favicon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="src/styles/app.css">
+<script type="module" src="src/main.js"></script>
+</head>
+<body>
+
+<header class="top">
+  <a href="https://primatelegends.world" target="_blank" rel="noopener"><img src="public/img/brand/logo.png" alt="Primate Legends"></a>
+  <button type="button" class="btn btn--ghost" data-wallet>Connect wallet</button>
+</header>
+
+<main class="wrap">
+  <section class="intro">
+    <h1>Legendary Cards · UI preview</h1>
+    <p>A self-contained preview of the card vault. Everything runs in your browser: packs, the daily claim and your collection are stored locally, and nothing is sent anywhere.</p>
+  </section>
+
+  <div class="counts" data-counts aria-live="polite"></div>
+
+  <section class="panel" aria-labelledby="packs-title">
+    <h2 id="packs-title">Sealed packs</h2>
+    <div class="shelf" data-packs></div>
+  </section>
+
+  <section class="panel" aria-labelledby="claim-title">
+    <h2 id="claim-title">Daily claim</h2>
+    <p class="muted">One sealed card every 24 hours. Claim 7 days in a row and you also earn a Bounty.</p>
+    <div data-claim-root style="margin-top:16px"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="collection-title">
+    <h2 id="collection-title">Collection</h2>
+    <div data-collection></div>
+    <div class="row"><button type="button" class="link" data-reset>Reset the demo</button></div>
+  </section>
+</main>
+
+<footer class="foot">Primate Legends · 3,003 warriors · <a href="https://x.com/primatelegends" target="_blank" rel="noopener" style="color:var(--gold)">@primatelegends</a></footer>
+
+</body>
+</html>

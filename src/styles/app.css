@@ -1,0 +1,122 @@
+/* Legendary Cards UI preview. Pixel art is always drawn at whole-number scales. */
+
+:root{
+  --bg:#0a161b; --panel:rgba(7,16,20,.82); --line:rgba(233,192,101,.2);
+  --ink:#eaf3f6; --muted:#9fb7bf; --gold:#e9c065; --gold-dim:#9c8248; --outline:#2a1d10;
+  --pixel:'Press Start 2P', ui-monospace, monospace; --text:'Rajdhani', system-ui, sans-serif;
+  color-scheme:dark;
+}
+*{ box-sizing:border-box; }
+body{ margin:0; background:var(--bg) radial-gradient(ellipse at top, #16323a, var(--bg) 60%) no-repeat; color:var(--ink); font:500 17px/1.6 var(--text); }
+img{ image-rendering:pixelated; }
+[hidden]{ display:none !important; }
+.muted{ color:var(--muted); margin:0; }
+
+/* layout */
+.top{ position:sticky; top:0; z-index:5; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 20px; background:rgba(6,14,18,.92); border-bottom:1px solid var(--line); }
+.top img{ height:28px; width:auto; image-rendering:auto; display:block; }
+.wrap{ max-width:1180px; margin:0 auto; padding:40px 20px 80px; display:grid; gap:28px; }
+.intro h1{ font:400 clamp(20px,3vw,30px)/1.3 var(--pixel); margin:0 0 12px; color:var(--gold); }
+.intro p{ margin:0; max-width:720px; color:var(--muted); }
+.counts{ display:flex; flex-wrap:wrap; gap:10px 22px; align-items:center; }
+.counts b{ color:var(--gold); }
+.counts img{ width:20px; height:20px; vertical-align:-4px; image-rendering:auto; }
+.panel{ background:var(--panel); border:1px solid var(--line); padding:26px 24px; }
+.panel h2{ font:400 12px/1.4 var(--pixel); letter-spacing:.08em; color:var(--gold); margin:0 0 18px; }
+.row{ display:flex; flex-wrap:wrap; align-items:center; gap:12px 18px; margin:18px 0 0; }
+.foot{ text-align:center; color:var(--muted); font-size:14px; padding:0 20px 40px; }
+
+/* buttons */
+.btn{ font:400 10px/1.4 var(--pixel); letter-spacing:.05em; padding:13px 16px; border:0; cursor:pointer; color:var(--outline); background:var(--gold); box-shadow:inset 0 3px 0 rgba(255,244,201,.7), inset 0 -4px 0 rgba(110,74,30,.45), 0 0 0 3px var(--outline); }
+.btn:disabled{ filter:saturate(.2) brightness(.7); cursor:not-allowed; }
+.btn--ghost{ color:var(--gold); background:#12242a; box-shadow:0 0 0 3px var(--outline); }
+.btn:focus-visible, .pack:focus-visible, .card:focus-visible{ outline:3px solid #8fe0ff; outline-offset:4px; }
+.link{ margin-top:14px; background:none; border:0; padding:0; color:var(--gold-dim); font:600 14px var(--text); text-decoration:underline; cursor:pointer; }
+
+/* card */
+.card{ --px:2; --w:calc(64px * var(--px)); position:relative; width:var(--w); padding:0; border:0; background:none; cursor:pointer; perspective:800px; display:flex; flex-direction:column; align-items:center; gap:8px; }
+.card__face{ position:relative; display:block; width:var(--w); aspect-ratio:64/90; transform:rotateX(var(--tilt-x,0)) rotateY(var(--tilt-y,0)); transition:transform .15s ease; filter:drop-shadow(0 0 3px var(--glow)) drop-shadow(0 8px 10px rgba(0,0,0,.5)); }
+.card__back{ width:100%; height:100%; display:block; }
+.card__logo{ position:absolute; left:20.3%; width:59.4%; top:63.9%; height:8.4%; object-fit:contain; image-rendering:auto; }
+.card__shine{ position:absolute; inset:6%; background:linear-gradient(115deg, transparent 35%, rgba(255,255,255,.25) 50%, transparent 65%); opacity:0; transition:opacity .2s; }
+.card:hover .card__shine{ opacity:1; }
+.card__serial{ font:400 7px var(--pixel); color:var(--muted); }
+
+/* packs */
+.shelf{ display:flex; flex-wrap:wrap; gap:18px; }
+.pack{ display:flex; flex-direction:column; align-items:center; gap:6px; padding:14px; border:1px solid var(--line); background:#0c1a1f; color:var(--ink); cursor:pointer; font:600 15px var(--text); }
+.pack img{ width:108px; height:auto; }
+.pack small{ color:var(--gold-dim); font-style:italic; }
+.deal__fan{ display:flex; justify-content:center; flex-wrap:wrap; gap:10px; margin:6px 0 18px; }
+.deal__fan .card{ animation:deal .45s calc(var(--i) * 90ms) both steps(6); }
+@keyframes deal{ from{ opacity:0; transform:translateY(30px); } }
+.deal__hint{ min-height:42px; text-align:center; }
+
+/* hints */
+.tag{ display:inline-block; padding:4px 8px; font:400 8px var(--pixel); color:#0b1418; background:var(--tag); }
+.hints{ max-width:560px; display:grid; grid-template-columns:auto 1fr; gap:10px 16px; margin:0; padding:14px; border:1px solid var(--line); background:#0c1a1f; align-items:start; }
+.hints dt{ font:400 7px/2.2 var(--pixel); color:var(--gold-dim); }
+.hints dd{ margin:0; }
+.hints em, .hints-inline em{ color:var(--muted); }
+.odds-list{ list-style:none; margin:0; padding:0; display:grid; gap:6px; }
+.odds{ display:grid; grid-template-columns:20px 1fr auto; grid-template-rows:auto 4px; column-gap:8px; align-items:center; }
+.odds img{ grid-row:1/3; width:20px; height:20px; border-radius:50%; }
+.odds__name{ font-weight:700; font-size:14px; }
+.odds__pct{ font:400 8px var(--pixel); color:var(--gold); }
+.odds__bar{ grid-column:2/4; height:4px; background:#10232a; }
+.odds__bar i{ display:block; height:100%; }
+.hints-inline{ display:inline-flex; flex-wrap:wrap; gap:8px 14px; align-items:center; justify-content:center; margin:0; }
+
+/* daily claim */
+.streak{ list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(7, minmax(0, 56px)); gap:8px; }
+.streak__day{ text-align:center; font:400 7px var(--pixel); color:var(--muted); }
+.streak__day span{ position:relative; display:flex; align-items:center; justify-content:center; aspect-ratio:1; margin-bottom:6px; background:#10232a; box-shadow:inset 0 0 0 2px #1c3a44; }
+.streak__day img{ height:74%; width:auto; filter:grayscale(1) brightness(.7); opacity:.55; }
+.streak__day:last-child img{ image-rendering:auto; }
+.streak__day svg{ position:absolute; right:-5px; bottom:-5px; width:16px; height:16px; }
+.streak__day.done span{ box-shadow:inset 0 0 0 2px #2d6a57; }
+.streak__day.done img{ filter:none; opacity:1; }
+.streak__day.today span{ box-shadow:inset 0 0 0 2px var(--gold); }
+.streak__day.lost span{ background:#3a1414; box-shadow:inset 0 0 0 2px #c8453a; }
+.streak__day .x{ position:absolute; font:700 26px var(--text); color:#ff6b5e; }
+.claim-result{ display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start; margin-top:20px; }
+.claim-result > div{ flex:1 1 260px; }
+.bounty{ font:400 9px var(--pixel); color:#8fe0ff; margin:0 0 10px; }
+
+/* collection */
+.grid{ display:grid; grid-template-columns:repeat(10, 64px); justify-content:center; gap:18px 12px; }
+.grid__cell{ display:flex; justify-content:center; }
+.slot{ width:64px; aspect-ratio:64/90; display:flex; align-items:center; justify-content:center; color:#2f4b55; font:400 12px var(--pixel); background:rgba(4,11,14,.6); box-shadow:inset 0 0 0 2px #16303a; border-radius:4px; }
+.pager{ display:flex; justify-content:center; align-items:center; gap:16px; margin-top:22px; font:400 9px var(--pixel); color:var(--muted); }
+
+/* dialog */
+.dialog{ max-width:min(720px, calc(100vw - 24px)); width:100%; border:1px solid var(--gold-dim); background:#08131a; color:var(--ink); padding:22px 20px; }
+.dialog--wide{ max-width:min(980px, calc(100vw - 24px)); }
+.dialog::backdrop{ background:rgba(2,6,8,.8); }
+.dialog__title{ font:400 12px var(--pixel); color:var(--gold); margin:0 0 16px; text-align:center; }
+.dialog__close{ position:absolute; top:10px; right:10px; margin:0; }
+.dialog__close button{ background:#12242a; color:var(--gold); border:0; width:34px; height:34px; cursor:pointer; }
+.inspect{ display:flex; flex-wrap:wrap; gap:22px; justify-content:center; align-items:flex-start; }
+.inspect > div{ flex:1 1 260px; }
+.rarity{ font:400 12px var(--pixel); margin:0 0 12px; }
+.facts{ display:grid; grid-template-columns:auto 1fr; gap:4px 14px; margin:0 0 14px; }
+.facts dt{ font:400 7px/2.4 var(--pixel); color:var(--gold-dim); }
+.facts dd{ margin:0; font-weight:700; }
+.wallets{ display:grid; gap:10px; }
+.wallets__item{ display:flex; align-items:center; gap:12px; padding:12px 14px; background:#0c1a1f; border:1px solid var(--line); color:var(--ink); font:600 16px var(--text); cursor:pointer; }
+.wallets__item img, .wallets__dot{ width:26px; height:26px; image-rendering:auto; }
+.wallets__dot{ border-radius:50%; background:var(--gold-dim); }
+
+@media (max-width:760px){
+  .wrap{ padding:24px 14px 60px; gap:18px; }
+  .panel{ padding:18px 14px; }
+  .grid{ grid-template-columns:repeat(4, 64px); gap:14px 10px; }
+  .streak{ gap:5px; }
+  .pack img{ width:84px; }
+  .top .btn{ white-space:nowrap; padding:11px 12px; font-size:9px; }
+  .top img{ height:22px; }
+}
+@media (prefers-reduced-motion:reduce){
+  .deal__fan .card{ animation:none; }
+  .card__face{ transition:none; }
+}
