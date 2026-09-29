@@ -8,7 +8,8 @@ but may change. **Planned** is not built yet.
 | Website | Landing page, territory map, lore | Live |
 | Website | Wallet drawer: ETH balance, items, clan pledge | Live |
 | Cards | Legendary Cards vault, packs, sealed cards | Launching Sep 30, 2026 |
-| Cards | Daily free claim with a 7-day streak and Bounties | Launching Sep 30, 2026 |
+| Cards | Daily free claim with a 7-day streak and Bounties (303-card supply, reveal before keeping) | Launching Sep 30, 2026 |
+| Whitelist | Referral-only applications, referral quest with Bounties and double chances ([rules](referrals-and-claims.md)) | Live |
 | Cards | My Collection page | Launching Sep 30, 2026 |
 | Cards | Sealed-card hints (card type, possible clan) and random serial numbers | Launching Sep 30, 2026 |
 | Cards | Burn 4 cards + 1 Primate for WETH or Ryo Coins (burn cap 1,003, supply floor 2,000) | Planned (after mint) |
