@@ -18,9 +18,12 @@ but may change. **Planned** is not built yet.
 | Agents | MCP server exposing the read-only vault API to any agent | Planned |
 | Game | Card Battles rules engine (rounds, Ki, keywords, Heroes, scoring) | In development |
 | Game | Seasonal Honor on-chain (HonorLedger) | Draft |
-| On-chain | Sealed cards airdropped as ERC-1155 tokens on Ethereum | Planned |
+| Market | Pre-Market: trade sealed cards wallet to wallet in ETH or USDC on Solana ([rules](pre-market.md)) | In development |
+| Market | Linked Solana wallets (up to 3 per profile) | In development |
+| On-chain | Sealed cards migrated 1:1 from the Pre-Market as ERC-1155 tokens ([LegendaryCards](../contracts/LegendaryCards.sol)) | Draft |
+| On-chain | One-transaction checkout contract ([PreMarketSettlement](../contracts/PreMarketSettlement.sol)) | Draft |
 | On-chain | Primate Legends collection contract (3,003 tokens) | Planned |
-| On-chain | Verified contract source published in [`contracts/`](../contracts/) | Planned |
+| On-chain | Contract drafts published in [`contracts/`](../contracts/), compiled and tested with `npm test` | Draft |
 | Marketplaces | Legendary Cards listed on [Phygitals](https://www.phygitals.com/) | Planned (goal) |
 | Economy | Ryo Coins balance and weekly missions | Planned |
 | Map | Monoliths on the Wiko map that drop Bounties | Planned |

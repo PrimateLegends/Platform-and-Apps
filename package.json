@@ -1,17 +1,25 @@
 {
   "name": "primate-legends-platform-apps",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
-  "description": "Primate Legends Platform & Apps: Legendary Cards UI preview, Card Battles rules engine and integrations.",
+  "description": "Primate Legends Platform & Apps: Legendary Cards UI preview, Pre-Market rules, Card Battles engine, Solidity drafts and integrations.",
   "homepage": "https://primatelegends.world",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "scripts": {
     "start": "node scripts/serve.mjs 8080",
-    "test": "node --test apps/card-battles/test/engine.test.js apps/legendary-cards-preview/test/quest-and-supply.test.js",
-    "check": "node scripts/check.mjs"
+    "test": "node --test apps/card-battles/test/engine.test.js apps/legendary-cards-preview/test/quest-and-supply.test.js apps/pre-market/test/pre-market.test.js contracts/test/contracts.test.mjs",
+    "check": "node scripts/check.mjs",
+    "contracts": "node scripts/compile-contracts.mjs"
   },
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "@ethereumjs/common": "^4.4.0",
+    "@ethereumjs/util": "^9.1.0",
+    "@ethereumjs/vm": "^8.1.1",
+    "ethers": "^6.17.0",
+    "solc": "^0.8.28"
   }
 }

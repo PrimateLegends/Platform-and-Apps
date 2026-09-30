@@ -13,6 +13,8 @@
   <a href="https://x.com/primatelegends">@primatelegends</a> ·
   <a href="docs/architecture.md">Architecture</a> ·
   <a href="docs/card-battles.md">Card Battles</a> ·
+  <a href="docs/pre-market.md">Pre-Market</a> ·
+  <a href="contracts/">Contracts</a> ·
   <a href="docs/roadmap.md">Roadmap</a>
 </p>
 
@@ -26,6 +28,24 @@
 | --- | --- | --- |
 | [Legendary Cards preview](apps/legendary-cards-preview/) | Browser-only preview of the card vault: sealed packs, daily claims with a 7-day streak, card hints and the collection grid | Preview |
 | [Card Battles](apps/card-battles/) | Rules engine for the two-player card game: rounds, Ki, attack token, keywords, Heroes, scoring and Honor | In development |
+| [Pre-Market](apps/pre-market/) | Rules for trading sealed cards before they go on-chain: listings, filters, wallet-to-wallet checkout, linked Solana wallets | In development |
+
+## Pre-Market
+
+Players trade sealed Legendary Cards before cards go on-chain, paying each other directly in ETH or
+USDC on Solana. Your ETH wallet is your profile; up to 3 Solana wallets can be linked to it. Every
+Pre-Market card is pegged 1:1 to the [`LegendaryCards`](contracts/LegendaryCards.sol) ERC-1155 contract
+and airdropped to its owner at migration. Details in [docs/pre-market.md](docs/pre-market.md).
+
+## Contracts
+
+| Contract | Purpose |
+| --- | --- |
+| [`LegendaryCards`](contracts/LegendaryCards.sol) | ERC-1155 sealed cards, 1:1 migration from a Merkle snapshot of the Pre-Market |
+| [`PreMarketSettlement`](contracts/PreMarketSettlement.sol) | One-transaction ETH checkout with an immutable fee, keeps nothing |
+| [`HonorLedger`](contracts/HonorLedger.sol) | Seasonal Card Battles Honor, claimed with Merkle proofs |
+
+All drafts, not audited, not deployed. They compile with solc 0.8.28 and run in an in-process EVM in `npm test`.
 
 ## Primate Legends: Card Battles
 
@@ -62,18 +82,19 @@ npm test         # Card Battles rules tests
 npm run check    # assets resolve, no secrets or local paths
 ```
 
-Node 18 or newer. No dependencies to install.
+Node 18 or newer. The apps have no dependencies; `npm install` only adds the Solidity compiler and the test EVM used by `npm test`.
 
 ## Layout
 
 ```
 ├── apps/
 │   ├── legendary-cards-preview/   card vault UI preview (ES modules, no build step)
-│   └── card-battles/              rules engine + tests
-├── contracts/                     HonorLedger.sol (draft) and deployed addresses, once live
+│   ├── card-battles/              rules engine + tests
+│   └── pre-market/                Pre-Market rules: listings, checkout, linked Solana wallets
+├── contracts/                     Solidity drafts (LegendaryCards, PreMarketSettlement, HonorLedger) + EVM tests
 ├── integrations/                  OpenClaw skill, ChatGPT app (planned)
-├── docs/                          architecture, Card Battles rules, roadmap
-└── scripts/                       local server and repository checks
+├── docs/                          architecture, Card Battles, Pre-Market, roadmap
+└── scripts/                       local server, repository checks, contract compiler
 ```
 
 ## Agents
