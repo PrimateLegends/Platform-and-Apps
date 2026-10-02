@@ -14,6 +14,7 @@
   <a href="docs/architecture.md">Architecture</a> ·
   <a href="docs/card-battles.md">Card Battles</a> ·
   <a href="docs/pre-market.md">Pre-Market</a> ·
+  <a href="docs/battle-cards-app-store.md">App Store</a> ·
   <a href="contracts/">Contracts</a> ·
   <a href="docs/roadmap.md">Roadmap</a>
 </p>
@@ -29,6 +30,7 @@
 | [Legendary Cards preview](apps/legendary-cards-preview/) | Browser-only preview of the card vault: sealed packs, daily claims with a 7-day streak, card hints and the collection grid | Preview |
 | [Card Battles](apps/card-battles/) | Rules engine for the two-player card game: rounds, Ki, attack token, keywords, Heroes, scoring and Honor | In development |
 | [Pre-Market](apps/pre-market/) | Rules for trading sealed cards before they go on-chain: listings, filters, wallet-to-wallet checkout, linked Solana wallets | In development |
+| [Battle Cards for iOS](apps/battle-cards-ios/) | SwiftUI draft of the iPhone and iPad app: Inventory and Pre-Market screens | Draft, not compiled yet |
 
 ## Pre-Market
 
@@ -72,6 +74,20 @@ match = apply(match, { type: 'play', player: 0, handIndex: 0 });
 match = apply(match, { type: 'attack', player: 0, attackers: [1] });
 ```
 
+## Battle Cards Appstore Prospect
+
+We want Battle Cards on iPhone and iPad. The first build is read-only: your **Inventory** (sealed
+cards, packs and hints) and the **Pre-Market** (listings, filters, floor price), the same two
+things you can already do on the website. Battles come after.
+
+- Draft Swift code: [`apps/battle-cards-ios`](apps/battle-cards-ios/). It has not been compiled or
+  run yet.
+- Your Ethereum address is your profile, as on the site. The app never asks for a seed phrase and
+  never signs anything.
+- Trading stays on primatelegends.world, wallet to wallet. The app shows listings and links out.
+- Nothing has been submitted to Apple and there is no date. Plan and open questions:
+  [docs/battle-cards-app-store.md](docs/battle-cards-app-store.md).
+
 ## Run it
 
 ```bash
@@ -90,10 +106,11 @@ Node 18 or newer. The apps have no dependencies; `npm install` only adds the Sol
 ├── apps/
 │   ├── legendary-cards-preview/   card vault UI preview (ES modules, no build step)
 │   ├── card-battles/              rules engine + tests
-│   └── pre-market/                Pre-Market rules: listings, checkout, linked Solana wallets
+│   ├── pre-market/                Pre-Market rules: listings, checkout, linked Solana wallets
+│   └── battle-cards-ios/          SwiftUI draft of the iOS app (Inventory, Pre-Market)
 ├── contracts/                     Solidity drafts (LegendaryCards, PreMarketSettlement, HonorLedger) + EVM tests
 ├── integrations/                  OpenClaw skill, ChatGPT app (planned)
-├── docs/                          architecture, Card Battles, Pre-Market, roadmap
+├── docs/                          architecture, Card Battles, Pre-Market, App Store prospect, roadmap
 └── scripts/                       local server, repository checks, contract compiler
 ```
 
@@ -120,13 +137,15 @@ No contract is deployed yet. Official addresses will only be published in
 
 ## Built with
 
-This code is written, edited and reviewed by the Primate Legends team. AI assistants help us
-draft and check work; people decide what ships.
+This code is written, edited and reviewed by the Primate Legends team, led by **SnowMofo**
+(Founder, Senior Dev) and **Crovy** (Developer). AI assistants help us draft and check work;
+people decide what ships.
 
 | What | Where we use it |
 | --- | --- |
 | [Solidity](https://soliditylang.org/) 0.8 | The contract drafts in [`contracts/`](contracts/) |
 | JavaScript (ES modules) | The apps in [`apps/`](apps/), with no framework and no build step |
+| Swift and SwiftUI | The [iOS draft](apps/battle-cards-ios/) of Battle Cards |
 | [Node.js](https://nodejs.org/) and `node:test` | Tests and repository checks |
 | [ethers](https://docs.ethers.org/) | Wallet signatures and contract tests |
 | [EthereumJS VM](https://github.com/ethereumjs/ethereumjs-monorepo) and [solc](https://github.com/ethereum/solc-js) | Compiling and running the contracts locally |

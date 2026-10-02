@@ -1,8 +1,8 @@
 {
   "name": "primate-legends-platform-apps",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "private": true,
-  "description": "Primate Legends Platform & Apps: Legendary Cards UI preview, Pre-Market rules, Card Battles engine, Solidity drafts and integrations.",
+  "description": "Primate Legends Platform & Apps: Legendary Cards UI preview, Pre-Market rules, Card Battles engine, iOS app draft, Solidity drafts and integrations.",
   "homepage": "https://primatelegends.world",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",

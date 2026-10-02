@@ -9,6 +9,9 @@
  * - Anti-farming: another person's code can't be used from the network that opened it, and each
  *   network gets a limited number of applications per day.
  *
+ * - Batches: the whitelist opens in batches. Between batches everything pauses: no new codes, no
+ *   applications, and existing codes don't validate. Codes and earned rewards are kept for later.
+ *
  * Pure logic with an injectable clock and random source; the live site keeps this server-side.
  */
 const DAY = 24 * 60 * 60 * 1000;
@@ -25,6 +28,7 @@ export function createReferralQuest({ usesPerCode = 3, maxRewards = 2, applicati
   const applications = new Map();  // wallet -> { code, own, network, at, rewarded }
   const approved = new Set();
   const events = [];               // rewards, newest last
+  let open = true;                 // false between whitelist batches
 
   const openCodeOf = wallet => [...codes.entries()].find(([, c]) => c.owner === wallet && !c.completed)?.[0] ?? null;
   const rewardsOf = wallet => [...codes.values()].filter(c => c.owner === wallet && c.completed).length;
@@ -40,6 +44,10 @@ export function createReferralQuest({ usesPerCode = 3, maxRewards = 2, applicati
   return {
     events,
 
+    /** Opens or closes the current whitelist batch. */
+    setOpen(value) { open = !!value; },
+    get open() { return open; },
+
     quest(wallet) {
       const code = openCodeOf(wallet);
       const earned = rewardsOf(wallet);
@@ -51,11 +59,13 @@ export function createReferralQuest({ usesPerCode = 3, maxRewards = 2, applicati
         doubleChances: earned > 0,
         done: earned >= maxRewards,
         applied: applications.has(wallet),
-        approved: approved.has(wallet)
+        approved: approved.has(wallet),
+        paused: !open
       };
     },
 
     openCode(wallet, network) {
+      if (!open) return { ok: false, reason: 'closed' };
       const current = openCodeOf(wallet);
       if (current) return { ok: true, code: current };
       if (rewardsOf(wallet) >= maxRewards) return { ok: false, reason: 'quest-complete' };
@@ -65,6 +75,7 @@ export function createReferralQuest({ usesPerCode = 3, maxRewards = 2, applicati
     },
 
     check(raw, wallet) {
+      if (!open) return { valid: false, reason: 'closed' };
       const code = normalizeCode(raw);
       const entry = codes.get(code);
       if (!isCode(code) || !entry) return { valid: false, reason: 'unknown-code' };
@@ -73,6 +84,7 @@ export function createReferralQuest({ usesPerCode = 3, maxRewards = 2, applicati
     },
 
     apply(wallet, raw, network, now = Date.now()) {
+      if (!open) return { ok: false, reason: 'closed' };
       const code = normalizeCode(raw);
       const entry = codes.get(code);
       if (!entry) return { ok: false, reason: 'unknown-code' };

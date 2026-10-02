@@ -62,3 +62,21 @@ test('referral quest: approval pays friends once, never the owner', () => {
   assert.equal(q.approve('owner').rewarded, false);
   assert.equal(q.quest('friend').approved, true);
 });
+
+test('referral quest: between batches everything pauses and nothing is lost', () => {
+  const q = createReferralQuest();
+  const { code } = q.openCode('owner', 'net-a');
+  assert.equal(q.apply('owner', code, 'net-a', 0).ok, true);
+
+  q.setOpen(false);
+  assert.equal(q.quest('owner').paused, true);
+  assert.equal(q.openCode('newcomer', 'net-b').reason, 'closed');
+  assert.deepEqual(q.check(code, 'friend'), { valid: false, reason: 'closed' });
+  assert.equal(q.apply('friend', code, 'net-b', 10).reason, 'closed');
+  assert.equal(q.quest('owner').code, code);
+  assert.equal(q.quest('owner').uses, 1);
+
+  q.setOpen(true);
+  assert.equal(q.quest('owner').paused, false);
+  assert.equal(q.apply('friend', code, 'net-b', 20).usesLeft, 1);
+});
