@@ -118,6 +118,21 @@ Node 18 or newer. The apps have no dependencies; `npm install` only adds the Sol
 No contract is deployed yet. Official addresses will only be published in
 [`contracts/`](contracts/) and announced on [@primatelegends](https://x.com/primatelegends).
 
+## Built with
+
+This code is written, edited and reviewed by the Primate Legends team. AI assistants help us
+draft and check work; people decide what ships.
+
+| What | Where we use it |
+| --- | --- |
+| [Solidity](https://soliditylang.org/) 0.8 | The contract drafts in [`contracts/`](contracts/) |
+| JavaScript (ES modules) | The apps in [`apps/`](apps/), with no framework and no build step |
+| [Node.js](https://nodejs.org/) and `node:test` | Tests and repository checks |
+| [ethers](https://docs.ethers.org/) | Wallet signatures and contract tests |
+| [EthereumJS VM](https://github.com/ethereumjs/ethereumjs-monorepo) and [solc](https://github.com/ethereum/solc-js) | Compiling and running the contracts locally |
+| [Cloudflare Workers and D1](https://developers.cloudflare.com/workers/) | The live site and its card vault API |
+| [ChatGPT](https://chatgpt.com/) and [Claude](https://claude.com/) | Drafting, refactoring and code review support |
+
 ## License
 
 All rights reserved. The code is public so you can read and try it. The artwork, characters
