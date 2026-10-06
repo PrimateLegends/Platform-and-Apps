@@ -39,6 +39,10 @@ USDC on Solana. Your ETH wallet is your profile; up to 3 Solana wallets can be l
 Pre-Market card is pegged 1:1 to the [`LegendaryCards`](contracts/LegendaryCards.sol) ERC-1155 contract
 and airdropped to its owner at migration. Details in [docs/pre-market.md](docs/pre-market.md).
 
+## $RYO and WL Batch 3
+
+`apps/ryo` holds the rules for $RYO, the off-chain currency of the Pre-Market until the token launch: fixed supply of 1,000,000,000, $RYO-only listings with a 1,000 floor, a vault that buys at 80% up to 3 times a week per wallet, the daily claim with its 7-day streak reward, and the WL Batch 3 claim codes (20 uses, 100 $RYO per use; new wallets get 1 sealed card + 50 $RYO, and 50 more after review). Details in [docs/ryo-and-batch3.md](docs/ryo-and-batch3.md).
+
 ## Contracts
 
 | Contract | Purpose |
