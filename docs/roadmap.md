@@ -13,6 +13,11 @@ but may change. **Planned** is not built yet.
 | Whitelist | Batch 3, the final enlistment | Planned |
 | Cards | My Collection page | Live |
 | Cards | Sealed-card hints (card type, possible clan) and random serial numbers | Live |
+| Cards | Card reveal: batch 1 (80%) and batch 2 (83.8%), hint-true fronts, clans by fur colour ([rules](card-reveal.md)) | Live |
+| Cards | Clan variants: common Attack/Defense cards in up to 4 clans | Live |
+| Cards | Next art batches: Evasion/Healing commons and more Epic fronts, to reveal the rest | Planned |
+| Market | Escrow swap liquidity: team-minted revealed cards | Live |
+| Economy | Loyalty reward (1,500 $RYO to every registered wallet, +3,000 for 3+ free claims) | Done |
 | Cards | Burn 4 cards + 1 Primate for WETH or Ryo Coins (burn cap 1,003, supply floor 2,000) | Planned (after mint) |
 | Agents | [OpenClaw skill](../integrations/openclaw/) to check a wallet's vault and daily claim | Experimental |
 | Agents | [ChatGPT app](../integrations/chatgpt/) to browse clans, lore and your collection from a chat | Planned |

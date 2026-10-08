@@ -1,7 +1,7 @@
-// WL Batch 3: farm $RYO by sharing a claim code. Each code has 20 uses and pays its owner 100 $RYO per use;
+// WL Batch 3: farm $RYO by sharing a claim code. Each code has 20 uses and pays its owner 400 $RYO per use;
 // a fresh wallet that redeems a code gets 1 sealed card + 50 $RYO now and 50 more after the team review.
 export const CODE_USES = 20;
-export const PER_USE = 100;
+export const PER_USE = 400;            // x4 since v0.10.0: rewards the early code owners
 export const WELCOME_NOW = 50;
 export const WELCOME_AFTER_REVIEW = 50;
 export const CODE_RE = /^PL-[A-Z0-9]{6}$/;

@@ -14,6 +14,7 @@
   <a href="docs/architecture.md">Architecture</a> ·
   <a href="docs/card-battles.md">Card Battles</a> ·
   <a href="docs/pre-market.md">Pre-Market</a> ·
+  <a href="docs/card-reveal.md">Card reveal</a> ·
   <a href="docs/battle-cards-app-store.md">App Store</a> ·
   <a href="contracts/">Contracts</a> ·
   <a href="docs/roadmap.md">Roadmap</a>
@@ -29,6 +30,7 @@
 | --- | --- | --- |
 | [Legendary Cards preview](apps/legendary-cards-preview/) | Browser-only preview of the card vault: sealed packs, daily claims with a 7-day streak, card hints and the collection grid | Preview |
 | [Card Battles](apps/card-battles/) | Rules engine for the two-player card game: rounds, Ki, attack token, keywords, Heroes, scoring and Honor | In development |
+| [Card reveal](apps/reveal/) | Reveal rules: hint-true fronts, tiers, copy caps, clans by fur colour, 35% of new claims revealed | Live |
 | [Pre-Market](apps/pre-market/) | Rules for trading sealed cards before they go on-chain: listings, filters, wallet-to-wallet checkout, linked Solana wallets | In development |
 | [Battle Cards for iOS](apps/battle-cards-ios/) | SwiftUI draft of the iPhone and iPad app: Inventory and Pre-Market screens | Draft, not compiled yet |
 
@@ -39,9 +41,15 @@ USDC on Solana. Your ETH wallet is your profile; up to 3 Solana wallets can be l
 Pre-Market card is pegged 1:1 to the [`LegendaryCards`](contracts/LegendaryCards.sol) ERC-1155 contract
 and airdropped to its owner at migration. Details in [docs/pre-market.md](docs/pre-market.md).
 
+## Card reveal
+
+Sealed cards are being revealed in batches: 83.8% of all cards so far, every one true to its hinted card type and
+within its rarity tier. Common Attack/Defense cards now exist in up to 4 clans (same art, the primate in another clan).
+The clan of a revealed card is the colour of the primates on it. Rules in [docs/card-reveal.md](docs/card-reveal.md).
+
 ## $RYO and WL Batch 3
 
-`apps/ryo` holds the rules for $RYO, the off-chain currency of the Pre-Market until the token launch: fixed supply of 1,000,000,000, $RYO-only listings with a 1,000 floor, a vault that buys at 80% up to 3 times a week per wallet, the daily claim with its 7-day streak reward, and the WL Batch 3 claim codes (20 uses, 100 $RYO per use; new wallets get 1 sealed card + 50 $RYO, and 50 more after review). Details in [docs/ryo-and-batch3.md](docs/ryo-and-batch3.md).
+`apps/ryo` holds the rules for $RYO, the off-chain currency of the Pre-Market until the token launch: fixed supply of 1,000,000,000, $RYO-only listings with a 1,000 floor, a vault that buys at 80% up to 3 times a week per wallet, the daily claim with its 7-day streak reward, and the WL Batch 3 claim codes (20 uses, 400 $RYO per use; new wallets get 1 sealed card + 50 $RYO, and 50 more after review). Details in [docs/ryo-and-batch3.md](docs/ryo-and-batch3.md).
 
 ## Contracts
 

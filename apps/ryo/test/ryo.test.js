@@ -65,3 +65,38 @@ test('claim codes: fresh wallets only, 20 uses, owner notice and post text', () 
   assert.equal(normalizeCode('plab12cd'), 'PL-AB12CD');
   assert.match(postText('PL-AB12CD'), /Use my code PL-AB12CD & let’s win together\.[\s\S]*\/c\/PL-AB12CD$/);
 });
+
+import { loyaltyBatch, LOYALTY, captchaStep, CAPTCHA_PASSES, bandPrice } from '../src/rewards.js';
+import { PER_USE } from '../src/claim-codes.js';
+
+test('claim codes pay the owner 400 per use (x4)', () => {
+  assert.equal(PER_USE, 400);
+});
+
+test('loyalty reward: base for everyone, bonus for 3+ free claims, resumable, never twice', () => {
+  const w = n => '0x' + String(n).padStart(40, '0');
+  const all = [w(1), w(2), w(3), w(4), 'not-a-wallet', w(1)];
+  const claims = { [w(1)]: 5, [w(2)]: 2 };
+  const first = loyaltyBatch(all, claims, { skip: [w(4)], limit: 2 });
+  assert.deepEqual(first.batch, [{ wallet: w(1), amount: LOYALTY.base + LOYALTY.bonus }, { wallet: w(2), amount: LOYALTY.base }]);
+  assert.equal(first.remaining, 1);
+  const second = loyaltyBatch(all, claims, { skip: [w(4)], paid: first.batch.map(r => r.wallet) });
+  assert.deepEqual(second.batch, [{ wallet: w(3), amount: LOYALTY.base }]);
+  assert.equal(loyaltyBatch(all, claims, { skip: [w(4)], paid: [w(1), w(2), w(3)] }).batch.length, 0);
+});
+
+test('captcha: 3 free actions, then one captcha covers the next 4', () => {
+  let st = { recent: 0, credit: 0 }, asked = 0;
+  for (let i = 0; i < 3 + 1 + CAPTCHA_PASSES + 1; i++) {
+    let r = captchaStep(st, false);
+    if (r.needsCaptcha) { asked++; r = captchaStep(st, true); }
+    st = r.state;
+  }
+  assert.equal(asked, 2, 'asked after the 3 free ones and again after 4 covered actions');
+});
+
+test('vault grant band price: inside the band, rounded to 50', () => {
+  for (let i = 0; i < 200; i++) { const p = bandPrice(3000, 8000); assert.ok(p >= 3000 && p <= 8000 && p % 50 === 0); }
+  assert.throws(() => bandPrice(500, 8000), /bad-price/);
+  assert.throws(() => bandPrice(8000, 3000), /bad-price/);
+});

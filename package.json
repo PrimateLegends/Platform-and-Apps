@@ -1,14 +1,14 @@
 {
   "name": "primate-legends-platform-apps",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "private": true,
-  "description": "Primate Legends Platform & Apps: Legendary Cards UI preview, Pre-Market and $RYO rules, Card Battles engine, iOS app draft, Solidity drafts and integrations.",
+  "description": "Primate Legends Platform & Apps: Legendary Cards UI preview, Pre-Market, $RYO and card reveal rules, Card Battles engine, iOS app draft, Solidity drafts and integrations.",
   "homepage": "https://primatelegends.world",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "scripts": {
     "start": "node scripts/serve.mjs 8080",
-    "test": "node --test apps/card-battles/test/engine.test.js apps/legendary-cards-preview/test/quest-and-supply.test.js apps/pre-market/test/pre-market.test.js apps/ryo/test/ryo.test.js contracts/test/contracts.test.mjs",
+    "test": "node --test apps/card-battles/test/engine.test.js apps/legendary-cards-preview/test/quest-and-supply.test.js apps/pre-market/test/pre-market.test.js apps/ryo/test/ryo.test.js apps/reveal/test/reveal.test.js contracts/test/contracts.test.mjs",
     "check": "node scripts/check.mjs",
     "contracts": "node scripts/compile-contracts.mjs"
   },
