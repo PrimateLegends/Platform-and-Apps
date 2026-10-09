@@ -2,6 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { VM } from '@ethereumjs/vm';
+import { Block } from '@ethereumjs/block';
 import { Common, Chain, Hardfork } from '@ethereumjs/common';
 import { Address, Account, hexToBytes, bytesToHex } from '@ethereumjs/util';
 import { Interface, AbiCoder, solidityPackedKeccak256, keccak256, getBytes, concat, id as eventId } from 'ethers';
@@ -15,7 +16,8 @@ const ETH = 10n ** 18n;
 const addr = n => new Address(hexToBytes('0x' + n.toString(16).padStart(40, '0')));
 
 async function chain() {
-  const vm = await VM.create({ common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun }) });
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun });
+  const vm = await VM.create({ common });
   const fund = async a => vm.stateManager.putAccount(a, Account.fromAccountData({ balance: 1000n * ETH }));
   const balance = async a => (await vm.stateManager.getAccount(a))?.balance ?? 0n;
   async function deploy(file, name, args = [], from) {
@@ -25,8 +27,10 @@ async function chain() {
     const r = await vm.evm.runCall({ caller: from, data: getBytes(data), gasLimit: 30_000_000n });
     if (r.execResult.exceptionError) throw new Error('deploy failed: ' + r.execResult.exceptionError.error);
     const at = r.createdAddress;
-    const call = async (fn, fnArgs = [], { from: caller = from, value = 0n } = {}) => {
-      const res = await vm.evm.runCall({ caller, to: at, data: getBytes(iface.encodeFunctionData(fn, fnArgs)), value, gasLimit: 30_000_000n });
+    // `time` (unix seconds) runs the call in a block with that timestamp.
+    const call = async (fn, fnArgs = [], { from: caller = from, value = 0n, time } = {}) => {
+      const block = time === undefined ? undefined : Block.fromBlockData({ header: { timestamp: BigInt(time), gasLimit: 30_000_000n } }, { common });
+      const res = await vm.evm.runCall({ caller, to: at, data: getBytes(iface.encodeFunctionData(fn, fnArgs)), value, gasLimit: 30_000_000n, block });
       const ret = bytesToHex(res.execResult.returnValue);
       if (res.execResult.exceptionError) {
         const err = ret !== '0x' ? iface.parseError(ret) : null;
@@ -142,4 +146,88 @@ test('PreMarketSettlement: one transaction pays the seller and the fee', async (
   await assert.rejects(paid.call('buy', [listing, seller.toString()], { from: buyer, value: ETH }), { revert: 'AlreadySettled' });
   await assert.rejects(paid.call('buy', [eventId('other'), seller.toString()], { from: buyer }), { revert: 'NothingPaid' });
   assert.equal((await paid.call('feeFor', [1000n])).value, 69n);
+});
+
+test('RyoToken: fixed supply, plain ERC-20', async () => {
+  const { fund, deploy } = await chain();
+  const dist = addr(0xd157), alice = addr(0xa1), spender = addr(0x5e);
+  for (const a of [dist, alice, spender]) await fund(a);
+  const ryo = await deploy('RyoToken.sol', 'RyoToken', [dist.toString()], dist);
+  const SUPPLY = 1_000_000_000n * ETH;
+  assert.equal((await ryo.call('totalSupply')).value, SUPPLY);
+  assert.equal((await ryo.call('balanceOf', [dist.toString()])).value, SUPPLY);
+  await ryo.call('transfer', [alice.toString(), 5n * ETH]);
+  await assert.rejects(ryo.call('transfer', [dist.toString(), 6n * ETH], { from: alice }), { revert: 'InsufficientBalance' });
+  await ryo.call('approve', [spender.toString(), 2n * ETH], { from: alice });
+  await ryo.call('transferFrom', [alice.toString(), spender.toString(), 2n * ETH], { from: spender });
+  await assert.rejects(ryo.call('transferFrom', [alice.toString(), spender.toString(), 1n], { from: spender }), { revert: 'InsufficientAllowance' });
+  assert.equal((await ryo.call('balanceOf', [alice.toString()])).value, 3n * ETH);
+});
+
+test('OfferBook: $RYO offers on Legendary Cards', async () => {
+  const { fund, deploy } = await chain();
+  const admin = addr(0xa11ce), alice = addr(0xa1), bob = addr(0xb0b), carol = addr(0xca), anyone = addr(0x9);
+  for (const a of [admin, alice, bob, carol, anyone]) await fund(a);
+  const cards = await deploy('LegendaryCards.sol', 'LegendaryCards', [admin.toString(), 'ipfs://cards/{id}.json'], admin);
+  const snap = [[144, alice, 1], [82, alice, 2]];
+  const { root, proof } = tree(snap.map(([s, o, r]) => solidityPackedKeccak256(['uint256', 'address', 'uint8'], [s, o.toString(), r])));
+  await cards.call('commitSnapshot', [root, 'ipfs://s']);
+  await cards.call('migrate', [[144, 82], [alice.toString(), alice.toString()], [1, 2], [proof(0), proof(1)]]);
+  const ryo = await deploy('RyoToken.sol', 'RyoToken', [admin.toString()], admin);
+  const book = await deploy('OfferBook.sol', 'OfferBook', [ryo.at.toString(), cards.at.toString()], admin);
+  const R = n => BigInt(n) * ETH;
+  for (const w of [bob, carol]) {
+    await ryo.call('transfer', [w.toString(), R(100_000)]);
+    await ryo.call('approve', [book.at.toString(), R(1_000_000)], { from: w });
+  }
+  const bal = async w => (await ryo.call('balanceOf', [w.toString()])).value;
+  const T0 = 1_760_000_000, DAY = 86_400;
+
+  // rules
+  await assert.rejects(book.call('placeOffer', [144, R(999), 7], { from: bob, time: T0 }), { revert: 'BadAmount' });
+  await assert.rejects(book.call('placeOffer', [144, R(2_000), 5], { from: bob, time: T0 }), { revert: 'BadDuration' });
+  await assert.rejects(book.call('placeOffer', [144, R(2_000), 7], { from: alice, time: T0 }), { revert: 'OwnCard' });
+
+  // place → the amount is held by the book
+  const p = await book.call('placeOffer', [144, R(5_000), 7], { from: bob, time: T0 });
+  assert.equal(p.value, 1n);
+  assert.equal(await bal(bob), R(95_000));
+  assert.equal(await bal(book.at), R(5_000));
+  // raise: only the difference moves, the old offer closes
+  const raised = await book.call('placeOffer', [144, R(8_000), 3], { from: bob, time: T0 + 10 });
+  assert.equal(raised.value, 2n);
+  assert.equal(await bal(bob), R(92_000));
+  assert.equal((await book.call('offers', [1])).value[2], 3n, 'first offer Cancelled');
+  await assert.rejects(book.call('cancelOffer', [1], { from: bob }), { revert: 'NotOpen' });
+
+  // reject (holder only) and cancel (bidder only) refund
+  await book.call('placeOffer', [144, R(6_000), 1], { from: carol, time: T0 });
+  await assert.rejects(book.call('rejectOffer', [3], { from: bob }), { revert: 'NotHolder' });
+  await book.call('rejectOffer', [3], { from: alice });
+  assert.equal(await bal(carol), R(100_000));
+  await book.call('placeOffer', [82, R(3_000), 30], { from: carol, time: T0 });
+  await assert.rejects(book.call('cancelOffer', [4], { from: bob }), { revert: 'NotBidder' });
+  await book.call('cancelOffer', [4], { from: carol });
+  assert.equal(await bal(carol), R(100_000));
+
+  // accept: needs approval for the cards, then card + $RYO swap in one call
+  // LegendaryCards reverts (NotOwnerOrApproved) inside the call; the book's ABI can't name a foreign error.
+  await assert.rejects(book.call('acceptOffer', [2], { from: alice, time: T0 + 60 }), { revert: 'revert' });
+  await cards.call('setApprovalForAll', [book.at.toString(), true], { from: alice });
+  await assert.rejects(book.call('acceptOffer', [2], { from: carol, time: T0 + 60 }), { revert: 'NotHolder' });
+  const acc = await book.call('acceptOffer', [2], { from: alice, time: T0 + 60 });
+  assert.ok(acc.logs.some(l => l.name === 'OfferAccepted'));
+  assert.equal((await cards.call('balanceOf', [bob.toString(), 144])).value, 1n);
+  assert.equal(await bal(alice), R(8_000));
+  assert.equal(await bal(book.at), 0n);
+  await assert.rejects(book.call('acceptOffer', [2], { from: bob, time: T0 + 61 }), { revert: 'NotOpen' });
+
+  // expiry: no accept after the deadline, anyone can send the $RYO back
+  await book.call('placeOffer', [82, R(2_000), 1], { from: bob, time: T0 });
+  await assert.rejects(book.call('reclaim', [5], { from: anyone, time: T0 + DAY - 1 }), { revert: 'NotExpired' });
+  await assert.rejects(book.call('acceptOffer', [5], { from: alice, time: T0 + DAY }), { revert: 'Expired' });
+  const before = await bal(bob);
+  await book.call('reclaim', [5], { from: anyone, time: T0 + DAY });
+  assert.equal(await bal(bob), before + R(2_000));
+  assert.equal(await bal(book.at), 0n);
 });

@@ -11,6 +11,8 @@ so the community can review the design before anything goes on-chain.
 | [LegendaryCards](LegendaryCards.sol) | ERC-1155 | Sealed cards, pegged 1:1 to the off-chain Pre-Market and migrated from a Merkle snapshot | Draft |
 | [PreMarketSettlement](PreMarketSettlement.sol) | — | Optional one-transaction ETH checkout: pays the seller and the fee in one call, keeps nothing | Draft |
 | [HonorLedger](HonorLedger.sol) | Merkle claims | Seasonal Card Battles Honor | Draft |
+| [RyoToken](RyoToken.sol) | ERC-20 | $RYO, fixed supply of 1,000,000,000 | Draft |
+| [OfferBook](OfferBook.sol) | — | $RYO offers on Legendary Cards, held in escrow until accepted, cancelled, rejected or expired | Draft |
 
 ## LegendaryCards: from Pre-Market to on-chain
 
@@ -32,6 +34,28 @@ fee is ever turned on, this contract keeps checkout to one signature: `buy(listi
 forwards `price - fee` to the seller and `fee` to the vault in the same call. The fee (max 10%)
 and the vault are fixed at deployment; there is no owner, no withdraw and no upgrade. A listing
 can only be settled once, and plain ETH sent to the contract is refused.
+
+## RyoToken
+
+$RYO is an off-chain ledger on the Pre-Market until the token launch. The token is a plain ERC-20
+with 18 decimals and a fixed supply of 1,000,000,000, minted once at deployment to the distributor
+that pays out the Pre-Market snapshot (balances plus $RYO locked in open offers). No mint, no burn
+authority, no pause, no owner.
+
+## OfferBook
+
+The on-chain version of Pre-Market offers.
+
+1. `placeOffer(cardId, amount, days)`: 1,000 to 10,000,000 $RYO, 1/3/7/30 days. The contract
+   pulls the $RYO (allowance needed). One open offer per bidder and card: a new one replaces the
+   old one and only the difference moves.
+2. `acceptOffer(id)`: the current holder of the card (who approved the contract for their cards)
+   sends it to the bidder and receives the $RYO in the same transaction.
+3. `cancelOffer(id)` (bidder), `rejectOffer(id)` (current holder) and `reclaim(id)` (anyone,
+   after expiry) send the $RYO back to the bidder.
+
+The offer belongs to the card, not to the holder at offer time. No owner, no fee, no upgrade path,
+reentrancy guarded, state written before any external call.
 
 ## Checks
 

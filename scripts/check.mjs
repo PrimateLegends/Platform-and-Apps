@@ -26,7 +26,7 @@ const problems = [];
 let refs = 0;
 for (const file of walk(ROOT)) {
   const rel = path.relative(ROOT, file).replace(/\\/g, '/');
-  if (!/\.(html|css|js|mjs|md|json|yml)$/.test(rel) || rel === SELF) continue;
+  if (!/\.(html|css|js|mjs|md|json|yml|py|sol|toml|swift)$/.test(rel) || rel === SELF) continue;
   const text = fs.readFileSync(file, 'utf8');
   for (const [re, what] of FORBIDDEN) if (re.test(text)) problems.push(`${rel}: ${what}`);
   if (!/\.(html|css|js)$/.test(rel)) continue;

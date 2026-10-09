@@ -1,8 +1,8 @@
 {
   "name": "primate-legends-platform-apps",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "private": true,
-  "description": "Primate Legends Platform & Apps: Legendary Cards UI preview, Pre-Market, $RYO and card reveal rules, Card Battles engine, iOS app draft, Solidity drafts and integrations.",
+  "description": "Primate Legends Platform & Apps: Legendary Cards UI preview, Pre-Market, $RYO, offers and card reveal rules, Python market engine, Card Battles engine, iOS app draft, Solidity drafts and integrations.",
   "homepage": "https://primatelegends.world",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
@@ -10,12 +10,15 @@
     "start": "node scripts/serve.mjs 8080",
     "test": "node --test apps/card-battles/test/engine.test.js apps/legendary-cards-preview/test/quest-and-supply.test.js apps/pre-market/test/pre-market.test.js apps/ryo/test/ryo.test.js apps/reveal/test/reveal.test.js contracts/test/contracts.test.mjs",
     "check": "node scripts/check.mjs",
-    "contracts": "node scripts/compile-contracts.mjs"
+    "contracts": "node scripts/compile-contracts.mjs",
+    "test:engine": "python -m unittest discover -s services/market-engine/tests -t services/market-engine",
+    "test:all": "npm test && npm run test:engine"
   },
   "engines": {
     "node": ">=18"
   },
   "devDependencies": {
+    "@ethereumjs/block": "^5.3.0",
     "@ethereumjs/common": "^4.4.0",
     "@ethereumjs/util": "^9.1.0",
     "@ethereumjs/vm": "^8.1.1",

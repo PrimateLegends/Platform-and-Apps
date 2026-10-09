@@ -15,6 +15,7 @@
   <a href="docs/card-battles.md">Card Battles</a> ·
   <a href="docs/pre-market.md">Pre-Market</a> ·
   <a href="docs/card-reveal.md">Card reveal</a> ·
+  <a href="docs/market-offers.md">Offers</a> ·
   <a href="docs/battle-cards-app-store.md">App Store</a> ·
   <a href="contracts/">Contracts</a> ·
   <a href="docs/roadmap.md">Roadmap</a>
@@ -32,6 +33,7 @@
 | [Card Battles](apps/card-battles/) | Rules engine for the two-player card game: rounds, Ki, attack token, keywords, Heroes, scoring and Honor | In development |
 | [Card reveal](apps/reveal/) | Reveal rules: hint-true fronts, tiers, copy caps, clans by fur colour, 35% of new claims revealed | Live |
 | [Pre-Market](apps/pre-market/) | Rules for trading sealed cards before they go on-chain: listings, filters, wallet-to-wallet checkout, linked Solana wallets | In development |
+| [Market engine](services/market-engine/) (Python) | $RYO ledger, card offers, airdrop split and rebalance, activity feed card references | Live rules |
 | [Battle Cards for iOS](apps/battle-cards-ios/) | SwiftUI draft of the iPhone and iPad app: Inventory and Pre-Market screens | Draft, not compiled yet |
 
 ## Pre-Market
@@ -51,6 +53,10 @@ The clan of a revealed card is the colour of the primates on it. Rules in [docs/
 
 `apps/ryo` holds the rules for $RYO, the off-chain currency of the Pre-Market until the token launch: fixed supply of 1,000,000,000, $RYO-only listings with a 1,000 floor, a vault that buys at 80% up to 3 times a week per wallet, the daily claim with its 7-day streak reward, and the WL Batch 3 claim codes (20 uses, 400 $RYO per use; new wallets get 1 sealed card + 50 $RYO, and 50 more after review). Details in [docs/ryo-and-batch3.md](docs/ryo-and-batch3.md).
 
+## Offers and the activity feed
+
+Every card in the game is visible on the Pre-Market: listings first, then every unlisted card (with its own **Unlisted** filter). Anyone can offer $RYO for a card that isn't theirs: 1,000 to 10,000,000 $RYO, open for 1, 3, 7 or 30 days, locked until the holder accepts, the bidder cancels, the holder rejects or it expires. The activity feed is a tab of the market and shows the card each event moved. Rules in [docs/market-offers.md](docs/market-offers.md), engine in [`services/market-engine`](services/market-engine/), on-chain draft in [`OfferBook.sol`](contracts/OfferBook.sol).
+
 ## Contracts
 
 | Contract | Purpose |
@@ -58,6 +64,8 @@ The clan of a revealed card is the colour of the primates on it. Rules in [docs/
 | [`LegendaryCards`](contracts/LegendaryCards.sol) | ERC-1155 sealed cards, 1:1 migration from a Merkle snapshot of the Pre-Market |
 | [`PreMarketSettlement`](contracts/PreMarketSettlement.sol) | One-transaction ETH checkout with an immutable fee, keeps nothing |
 | [`HonorLedger`](contracts/HonorLedger.sol) | Seasonal Card Battles Honor, claimed with Merkle proofs |
+| [`RyoToken`](contracts/RyoToken.sol) | Fixed-supply $RYO ERC-20: 1,000,000,000 minted once, no mint, no owner |
+| [`OfferBook`](contracts/OfferBook.sol) | $RYO offers on Legendary Cards: escrowed bids, one-transaction accept, reclaim after expiry |
 
 All drafts, not audited, not deployed. They compile with solc 0.8.28 and run in an in-process EVM in `npm test`.
 
@@ -106,11 +114,12 @@ things you can already do on the website. Battles come after.
 git clone https://github.com/PrimateLegends/Platform-and-Apps.git
 cd Platform-and-Apps
 npm start        # http://localhost:8080/apps/legendary-cards-preview/
-npm test         # Card Battles rules tests
-npm run check    # assets resolve, no secrets or local paths
+npm test             # apps + contracts (in-process EVM)
+npm run test:engine  # Python market engine
+npm run check        # assets resolve, no secrets or local paths
 ```
 
-Node 18 or newer. The apps have no dependencies; `npm install` only adds the Solidity compiler and the test EVM used by `npm test`.
+Node 18 or newer and Python 3.10 or newer. The apps and the engine have no dependencies; `npm install` only adds the Solidity compiler and the test EVM used by `npm test`. CI runs both on every push.
 
 ## Layout
 
@@ -120,7 +129,9 @@ Node 18 or newer. The apps have no dependencies; `npm install` only adds the Sol
 │   ├── card-battles/              rules engine + tests
 │   ├── pre-market/                Pre-Market rules: listings, checkout, linked Solana wallets
 │   └── battle-cards-ios/          SwiftUI draft of the iOS app (Inventory, Pre-Market)
-├── contracts/                     Solidity drafts (LegendaryCards, PreMarketSettlement, HonorLedger) + EVM tests
+├── services/
+│   └── market-engine/             Python: $RYO ledger, offers, airdrop rebalance, activity feed
+├── contracts/                     Solidity drafts (LegendaryCards, RyoToken, OfferBook, PreMarketSettlement, HonorLedger) + EVM tests
 ├── integrations/                  OpenClaw skill, ChatGPT app (planned)
 ├── docs/                          architecture, Card Battles, Pre-Market, App Store prospect, roadmap
 └── scripts/                       local server, repository checks, contract compiler
@@ -157,6 +168,7 @@ people decide what ships.
 | --- | --- |
 | [Solidity](https://soliditylang.org/) 0.8 | The contract drafts in [`contracts/`](contracts/) |
 | JavaScript (ES modules) | The apps in [`apps/`](apps/), with no framework and no build step |
+| [Python](https://www.python.org/) 3.10+ and `unittest` | The [market engine](services/market-engine/) |
 | Swift and SwiftUI | The [iOS draft](apps/battle-cards-ios/) of Battle Cards |
 | [Node.js](https://nodejs.org/) and `node:test` | Tests and repository checks |
 | [ethers](https://docs.ethers.org/) | Wallet signatures and contract tests |
