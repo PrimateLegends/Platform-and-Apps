@@ -13,6 +13,7 @@ so the community can review the design before anything goes on-chain.
 | [HonorLedger](HonorLedger.sol) | Merkle claims | Seasonal Card Battles Honor | Draft |
 | [RyoToken](RyoToken.sol) | ERC-20 | $RYO, fixed supply of 1,000,000,000 | Draft |
 | [OfferBook](OfferBook.sol) | — | $RYO offers on Legendary Cards, held in escrow until accepted, cancelled, rejected or expired | Draft |
+| [BattleStakes](BattleStakes.sol) | — | Battle Cards stakes: one transaction per player per match, the referee-signed result moves half of the loser's deck to the winner | Draft |
 
 ## LegendaryCards: from Pre-Market to on-chain
 
@@ -67,3 +68,13 @@ npm test            # includes contracts/test: the drafts run in an in-process E
 No contract is deployed yet. Until an address is published here and verified on Etherscan, any
 contract claiming to be Primate Legends is not ours. Official links are only announced on
 [@primatelegends](https://x.com/primatelegends) and [primatelegends.world](https://primatelegends.world).
+
+## BattleStakes
+
+1. Each player approves the contract on LegendaryCards once, then joins a match with **one transaction**:
+   `enter(matchId, keccak256(abi.encodePacked(deckSerials)))`.
+2. The match is played off-chain and replayed by the server (the referee), which signs
+   `keccak256(abi.encode(contract, chainId, matchId, winner, keccak256(abi.encodePacked(stake))))` (EIP-191).
+3. Anyone submits `settle(matchId, winner, loserDeck, stake, signature)`. The contract checks the signature, that
+   `loserDeck` matches the loser's commitment and that `stake` is exactly half of it with no repeats, then moves those
+   cards to the winner. `winner = address(0)` is a draw and moves nothing. Each match settles once.

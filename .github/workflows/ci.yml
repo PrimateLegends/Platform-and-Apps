@@ -24,7 +24,7 @@ jobs:
       - run: npm run check
 
   engine:
-    name: Market engine (Python ${{ matrix.python }})
+    name: Market engine and card catalog (Python ${{ matrix.python }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -35,3 +35,4 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: python -m unittest discover -s services/market-engine/tests -t services/market-engine -v
+      - run: python -m unittest discover -s services/card-balance/tests -t services/card-balance -v

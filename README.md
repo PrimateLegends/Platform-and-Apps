@@ -30,10 +30,11 @@
 | App | What it is | Status |
 | --- | --- | --- |
 | [Legendary Cards preview](apps/legendary-cards-preview/) | Browser-only preview of the card vault: sealed packs, daily claims with a 7-day streak, card hints and the collection grid | Preview |
-| [Card Battles](apps/card-battles/) | Rules engine for the two-player card game: rounds, Ki, attack token, keywords, Heroes, scoring and Honor | In development |
+| [Card Battles](apps/card-battles/) | Rules engine for the two-player card game (rules v1): KI and spare KI, attack token, CHALLENGE, combat keywords, equipment, ASCEND, half-deck stake, scoring and Honor | In development |
 | [Card reveal](apps/reveal/) | Reveal rules: hint-true fronts, tiers, copy caps, clans by fur colour, 35% of new claims revealed | Live |
 | [Pre-Market](apps/pre-market/) | Rules for trading sealed cards before they go on-chain: listings, filters, wallet-to-wallet checkout, linked Solana wallets | In development |
 | [Market engine](services/market-engine/) (Python) | $RYO ledger, card offers, airdrop split and rebalance, activity feed card references | Live rules |
+| [Card catalog](services/card-balance/) (Python) | All 205 card fronts with their KI, stats and text, checked against the stat budget, keyword vocabulary, deck rules and clan accents | Rules v1 |
 | [Battle Cards for iOS](apps/battle-cards-ios/) | SwiftUI draft of the iPhone and iPad app: Inventory and Pre-Market screens | Draft, not compiled yet |
 
 ## Pre-Market
@@ -64,6 +65,7 @@ Every card in the game is visible on the Pre-Market: listings first, then every 
 | [`LegendaryCards`](contracts/LegendaryCards.sol) | ERC-1155 sealed cards, 1:1 migration from a Merkle snapshot of the Pre-Market |
 | [`PreMarketSettlement`](contracts/PreMarketSettlement.sol) | One-transaction ETH checkout with an immutable fee, keeps nothing |
 | [`HonorLedger`](contracts/HonorLedger.sol) | Seasonal Card Battles Honor, claimed with Merkle proofs |
+| [`BattleStakes`](contracts/BattleStakes.sol) | One transaction per player per match; the referee-signed result moves half of the loser's deck to the winner |
 | [`RyoToken`](contracts/RyoToken.sol) | Fixed-supply $RYO ERC-20: 1,000,000,000 minted once, no mint, no owner |
 | [`OfferBook`](contracts/OfferBook.sol) | $RYO offers on Legendary Cards: escrowed bids, one-transaction accept, reclaim after expiry |
 
@@ -71,27 +73,29 @@ All drafts, not audited, not deployed. They compile with solc 0.8.28 and run in 
 
 ## Primate Legends: Card Battles
 
-The game your Legendary Cards are for. Two players, 40-card decks, one Shrine each.
+The game your Legendary Cards are for. Two players, 40-card decks, 20 points each, and the winner takes half of
+the loser's deck. Rules v1:
 
-- **Rounds and Ki.** Both players gain Ki every round and trade turns playing warriors,
-  techniques, relics and zones. Up to 3 unspent Ki is saved as Focus Ki.
-- **The attack token** switches every round. The attacker sends warriors into lanes, the
-  defender blocks, and whatever gets through hits the Shrine.
-- **Card types are keywords:** Attack = Quick Blade, Defense = Iron Skin, Evasion = Shadowstep,
-  Healing = Mend.
-- **Heroes.** Warriors level up when their Hero condition is met.
-- **Honor on-chain.** Matches are deterministic and replayed by the server. Each season's
-  Honor is committed as a Merkle root to the [`HonorLedger`](contracts/HonorLedger.sol)
-  contract, where players claim it.
+- **KI.** Both players gain KI every round and trade actions playing warriors, tactics, equipment, items and
+  locations. Up to 3 unspent KI is saved as spare KI for tactics.
+- **The attack token** switches every round. CHALLENGE warriors pick their blocker; SHADOW, INTIMIDATE, FIRST
+  STRIKE, TWIN STRIKE, BREAKTHROUGH, DODGE, IRON SKIN and the rest of a fixed keyword vocabulary decide each fight.
+- **Balanced by design.** Every warrior follows a KI stat budget, every clan stands out at one accent (evasion,
+  attack & burst, defense, healing) and has a full curve, and Starter scrolls complete short collections: no
+  useless decks. The checks run on the whole catalog in CI.
+- **Legendary warriors ASCEND** when their condition is met.
+- **On-chain.** One transaction per player per match ([`BattleStakes`](contracts/BattleStakes.sol)); matches are
+  deterministic and replayed by the server; each season's Honor is committed to [`HonorLedger`](contracts/HonorLedger.sol).
 
 Full rules in [docs/card-battles.md](docs/card-battles.md).
 
 ```js
-import { createMatch, apply } from './apps/card-battles/src/engine.js';
+import { createMatch, apply, settleStake } from './apps/card-battles/src/engine.js';
 
 let match = createMatch({ seed: 42, decks: [deckA, deckB] });
 match = apply(match, { type: 'play', player: 0, handIndex: 0 });
 match = apply(match, { type: 'attack', player: 0, attackers: [1] });
+const stake = settleStake(match);   // the 20 cards the winner takes
 ```
 
 ## Battle Cards Appstore Prospect
@@ -130,8 +134,9 @@ Node 18 or newer and Python 3.10 or newer. The apps and the engine have no depen
 │   ├── pre-market/                Pre-Market rules: listings, checkout, linked Solana wallets
 │   └── battle-cards-ios/          SwiftUI draft of the iOS app (Inventory, Pre-Market)
 ├── services/
-│   └── market-engine/             Python: $RYO ledger, offers, airdrop rebalance, activity feed
-├── contracts/                     Solidity drafts (LegendaryCards, RyoToken, OfferBook, PreMarketSettlement, HonorLedger) + EVM tests
+│   ├── market-engine/             Python: $RYO ledger, offers, airdrop rebalance, activity feed
+│   └── card-balance/              Python: the 205-card catalog and its balance rules
+├── contracts/                     Solidity drafts (LegendaryCards, RyoToken, OfferBook, PreMarketSettlement, HonorLedger, BattleStakes) + EVM tests
 ├── integrations/                  OpenClaw skill, ChatGPT app (planned)
 ├── docs/                          architecture, Card Battles, Pre-Market, App Store prospect, roadmap
 └── scripts/                       local server, repository checks, contract compiler
@@ -153,6 +158,7 @@ Node 18 or newer and Python 3.10 or newer. The apps and the engine have no depen
 | Sealed Legendary Cards (ERC-1155 airdrops) | Planned |
 | Burn 4 cards + 1 Primate for WETH or Ryo Coins | Planned (after mint) |
 | Card Battles Honor ([`HonorLedger.sol`](contracts/HonorLedger.sol)) | Draft |
+| Card Battles stakes ([`BattleStakes.sol`](contracts/BattleStakes.sol)) | Draft |
 | Legendary Cards on [Phygitals](https://www.phygitals.com/) | Goal |
 
 No contract is deployed yet. Official addresses will only be published in
@@ -168,7 +174,7 @@ people decide what ships.
 | --- | --- |
 | [Solidity](https://soliditylang.org/) 0.8 | The contract drafts in [`contracts/`](contracts/) |
 | JavaScript (ES modules) | The apps in [`apps/`](apps/), with no framework and no build step |
-| [Python](https://www.python.org/) 3.10+ and `unittest` | The [market engine](services/market-engine/) |
+| [Python](https://www.python.org/) 3.10+ and `unittest` | The [market engine](services/market-engine/) and the [card catalog](services/card-balance/) |
 | Swift and SwiftUI | The [iOS draft](apps/battle-cards-ios/) of Battle Cards |
 | [Node.js](https://nodejs.org/) and `node:test` | Tests and repository checks |
 | [ethers](https://docs.ethers.org/) | Wallet signatures and contract tests |

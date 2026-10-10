@@ -1,8 +1,8 @@
 {
   "name": "primate-legends-platform-apps",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "private": true,
-  "description": "Primate Legends Platform & Apps: Legendary Cards UI preview, Pre-Market, $RYO, offers and card reveal rules, Python market engine, Card Battles engine, iOS app draft, Solidity drafts and integrations.",
+  "description": "Primate Legends Platform & Apps: Legendary Cards UI preview, Pre-Market, $RYO, offers and card reveal rules, Python market engine, Battle Cards rules engine and card catalog, match stakes, iOS app draft, Solidity drafts and integrations.",
   "homepage": "https://primatelegends.world",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
@@ -11,7 +11,7 @@
     "test": "node --test apps/card-battles/test/engine.test.js apps/legendary-cards-preview/test/quest-and-supply.test.js apps/pre-market/test/pre-market.test.js apps/ryo/test/ryo.test.js apps/reveal/test/reveal.test.js contracts/test/contracts.test.mjs",
     "check": "node scripts/check.mjs",
     "contracts": "node scripts/compile-contracts.mjs",
-    "test:engine": "python -m unittest discover -s services/market-engine/tests -t services/market-engine",
+    "test:engine": "python -m unittest discover -s services/market-engine/tests -t services/market-engine && python -m unittest discover -s services/card-balance/tests -t services/card-balance",
     "test:all": "npm test && npm run test:engine"
   },
   "engines": {

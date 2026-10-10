@@ -5,7 +5,7 @@ import { VM } from '@ethereumjs/vm';
 import { Block } from '@ethereumjs/block';
 import { Common, Chain, Hardfork } from '@ethereumjs/common';
 import { Address, Account, hexToBytes, bytesToHex } from '@ethereumjs/util';
-import { Interface, AbiCoder, solidityPackedKeccak256, keccak256, getBytes, concat, id as eventId } from 'ethers';
+import { Interface, AbiCoder, solidityPackedKeccak256, keccak256, getBytes, concat, id as eventId, Wallet } from 'ethers';
 import { compileAll } from '../../scripts/compile-contracts.mjs';
 
 const { out, errors } = compileAll();
@@ -230,4 +230,57 @@ test('OfferBook: $RYO offers on Legendary Cards', async () => {
   await book.call('reclaim', [5], { from: anyone, time: T0 + DAY });
   assert.equal(await bal(bob), before + R(2_000));
   assert.equal(await bal(book.at), 0n);
+});
+
+
+/* ---------- BattleStakes: one transaction per player, the winner takes half of the loser's deck ---------- */
+test('BattleStakes: enter with one transaction, settle with the referee signature, winner takes half the deck', async () => {
+  const { fund, deploy } = await chain();
+  const admin = addr(0xa11ce), alice = addr(0xa1), bob = addr(0xb0b), anyone = addr(0x77);
+  for (const a of [admin, alice, bob, anyone]) await fund(a);
+  const referee = new Wallet('0x' + '11'.repeat(32));
+  const cards = await deploy('LegendaryCards.sol', 'LegendaryCards', [admin.toString(), 'ipfs://cards/{id}.json'], admin);
+  // four cards each (a tiny deck keeps the test readable; real decks are 40)
+  const aliceDeck = [11, 12, 13, 14], bobDeck = [21, 22, 23, 24];
+  const snap = [...aliceDeck.map(s => [s, alice, 1]), ...bobDeck.map(s => [s, bob, 2])];
+  const { root, proof } = tree(snap.map(([s, o, r]) => solidityPackedKeccak256(['uint256', 'address', 'uint8'], [s, o.toString(), r])));
+  await cards.call('commitSnapshot', [root, 'ipfs://s']);
+  await cards.call('migrate', [snap.map(x => x[0]), snap.map(x => x[1].toString()), snap.map(x => x[2]), snap.map((_, i) => proof(i))]);
+  const stakes = await deploy('BattleStakes.sol', 'BattleStakes', [cards.at.toString(), referee.address, admin.toString()], admin);
+  const commit = deck => solidityPackedKeccak256(deck.map(() => 'uint256'), deck);
+  const M = keccak256(getBytes(eventId('match-1')));
+
+  await assert.rejects(stakes.call('enter', [M, commit(aliceDeck)], { from: alice }), { revert: 'NotApproved' });
+  for (const p of [alice, bob]) await cards.call('setApprovalForAll', [stakes.at.toString(), true], { from: p });
+  await stakes.call('enter', [M, commit(aliceDeck)], { from: alice });
+  await assert.rejects(stakes.call('enter', [M, commit(aliceDeck)], { from: alice }), { revert: 'AlreadyEntered' });
+  await stakes.call('enter', [M, commit(bobDeck)], { from: bob });
+  await cards.call('setApprovalForAll', [stakes.at.toString(), true], { from: anyone });
+  await assert.rejects(stakes.call('enter', [M, commit(aliceDeck)], { from: anyone }), { revert: 'MatchFull' });
+
+  const sign = async (winner, stake) => referee.signMessage(getBytes((await stakes.call('resultDigest', [M, winner, stake])).value));
+  const stake = [22, 24];
+  // wrong signer, stake outside the loser's deck, wrong deck: all rejected
+  const forged = await new Wallet('0x' + '22'.repeat(32)).signMessage(getBytes((await stakes.call('resultDigest', [M, alice.toString(), stake])).value));
+  await assert.rejects(stakes.call('settle', [M, alice.toString(), bobDeck, stake, forged], { from: anyone }), { revert: 'BadSignature' });
+  await assert.rejects(stakes.call('settle', [M, alice.toString(), bobDeck, [22, 99], await sign(alice.toString(), [22, 99])], { from: anyone }), { revert: 'BadStake' });
+  await assert.rejects(stakes.call('settle', [M, alice.toString(), [21, 22, 23, 25], stake, await sign(alice.toString(), stake)], { from: anyone }), { revert: 'BadDeck' });
+  await assert.rejects(stakes.call('settle', [M, alice.toString(), bobDeck, [22, 22], await sign(alice.toString(), [22, 22])], { from: anyone }), { revert: 'BadStake' });
+
+  const res = await stakes.call('settle', [M, alice.toString(), bobDeck, stake, await sign(alice.toString(), stake)], { from: anyone });
+  assert.equal(res.logs.find(l => l.name === 'MatchSettled').args.winner.toLowerCase(), alice.toString());
+  const bal = async (who, id) => (await cards.call('balanceOf', [who.toString(), id])).value;
+  assert.equal(await bal(alice, 22), 1n); assert.equal(await bal(alice, 24), 1n);
+  assert.equal(await bal(bob, 22), 0n); assert.equal(await bal(bob, 21), 1n, 'the other half stays with the loser');
+  await assert.rejects(stakes.call('settle', [M, alice.toString(), bobDeck, stake, await sign(alice.toString(), stake)], { from: anyone }), { revert: 'AlreadySettled' });
+
+  // a draw moves nothing
+  const D = keccak256(getBytes(eventId('match-2')));
+  await stakes.call('enter', [D, commit(aliceDeck)], { from: alice });
+  await stakes.call('enter', [D, commit(bobDeck)], { from: bob });
+  const drawSig = await referee.signMessage(getBytes((await stakes.call('resultDigest', [D, '0x' + '00'.repeat(20), []])).value));
+  const d = await stakes.call('settle', [D, '0x' + '00'.repeat(20), [], [], drawSig], { from: anyone });
+  assert.ok(d.logs.some(l => l.name === 'MatchDrawn'));
+  assert.equal(await bal(alice, 11), 1n);
+  await assert.rejects(stakes.call('setReferee', [anyone.toString()], { from: anyone }), { revert: 'NotAdmin' });
 });

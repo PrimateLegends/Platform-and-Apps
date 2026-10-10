@@ -2,6 +2,27 @@
 
 All notable changes to this repository. Versions follow the live site's milestones.
 
+## 0.12.0
+
+### Added
+- **Battle Cards rules v1** (`docs/card-battles.md`): 20 points, KI with spare KI for tactics, warrior styles
+  (Attack / Defense / Evasion / Technique), tactic speeds (Instant / Swift / Ritual), equipment, items and locations,
+  a fixed keyword vocabulary, the KI stat budget, deck rules (2 clans, 6 Legendary, 1 Exclusive), Starter scrolls,
+  clan accents and the half-deck stake.
+- `services/card-balance`: Python package with the full card catalog (PL-001 … PL-205) and its balance checks
+  (stat budget, vocabulary, clan accents, a curve for every clan). 13 `unittest` tests.
+- `contracts/BattleStakes.sol`: one transaction per player per match (deck commitment); the referee-signed result
+  moves half of the loser's deck to the winner. EVM tests.
+- 50 new cards (PL-156 … PL-205): 18 object cards (equipment, items, tactics, locations) and 32 warriors across all
+  nine clans.
+
+### Changed
+- `apps/card-battles` engine rewritten for rules v1: CHALLENGE, SHADOW / SHARPEYE, INTIMIDATE, FIRST and TWIN STRIKE,
+  BREAKTHROUGH, DODGE, IRON SKIN, SPELL WARD, LIFESTEAL, REGENERATE, BLOODLUST, MIRAGE, equipment returning to hand,
+  ASCEND and `settleStake`. 17 rules tests.
+- Card balance pass: stats brought onto the budget and every card text rewritten with the keyword vocabulary.
+- Exclusive collab cards cost 8–9 KI and keep stats above every regular card.
+
 ## 0.11.0
 
 ### Added
