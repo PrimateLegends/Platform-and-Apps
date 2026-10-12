@@ -1,8 +1,8 @@
 {
   "name": "primate-legends-platform-apps",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "private": true,
-  "description": "Primate Legends Platform & Apps: Legendary Cards UI preview, Pre-Market, $RYO, offers and card reveal rules, Python market engine, Battle Cards rules engine and card catalog, match stakes, iOS app draft, Solidity drafts and integrations.",
+  "description": "Primate Legends Platform & Apps: Legendary Cards UI preview, Pre-Market, $RYO, offers and card reveal rules, Python market engine, Battle Card Legends rules engine and card catalog, match stakes, iOS app draft, Solidity drafts and integrations.",
   "homepage": "https://primatelegends.world",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",

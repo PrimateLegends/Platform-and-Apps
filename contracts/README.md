@@ -13,7 +13,7 @@ so the community can review the design before anything goes on-chain.
 | [HonorLedger](HonorLedger.sol) | Merkle claims | Seasonal Card Battles Honor | Draft |
 | [RyoToken](RyoToken.sol) | ERC-20 | $RYO, fixed supply of 1,000,000,000 | Draft |
 | [OfferBook](OfferBook.sol) | — | $RYO offers on Legendary Cards, held in escrow until accepted, cancelled, rejected or expired | Draft |
-| [BattleStakes](BattleStakes.sol) | — | Battle Cards stakes: one transaction per player per match, the referee-signed result moves half of the loser's deck to the winner | Draft |
+| [BattleStakes](BattleStakes.sol) | — | Battle Card Legends stakes: one transaction per player per match, the referee-signed result moves half of the loser's deck to the winner | Draft |
 
 ## LegendaryCards: from Pre-Market to on-chain
 

@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "primate-cards"
-version = "0.12.0"
-description = "Primate Legends Battle Cards: the card catalog (PL-001..PL-205), KI stat budget, keyword vocabulary, deck rules and clan accents."
+version = "0.12.1"
+description = "Primate Legends Battle Card Legends: the card catalog (PL-001..PL-205), KI stat budget, keyword vocabulary, deck rules and clan accents."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Proprietary, see LICENSE in the repository root" }

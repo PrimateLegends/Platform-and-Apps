@@ -1,10 +1,10 @@
-# Primate Legends: Battle Cards
+# Battle Card Legends
 
 **Status: in development (rules v1).** The rules engine lives in [`apps/card-battles`](../apps/card-battles/),
 the card catalog and its balance checks in [`services/card-balance`](../services/card-balance/), and the match
 stakes contract in [`contracts/BattleStakes.sol`](../contracts/BattleStakes.sol).
 
-Battle Cards is a two-player strategy card game set on the Wiko archipelago. Your Legendary Cards become your
+Battle Card Legends is a two-player strategy card game set on the Wiko archipelago. Your Legendary Cards become your
 deck, your Primates lead it, and the winner of a match takes half of the loser's deck.
 
 **Design goal: no useless decks.** Cards come from random reveals and packs, so whatever someone owns, their

@@ -2,7 +2,7 @@
 // DRAFT — not audited, not deployed. Published so the community can review the design.
 pragma solidity ^0.8.24;
 
-/// @title BattleStakes — Primate Legends: Battle Cards match stakes (draft, not deployed)
+/// @title BattleStakes — Battle Card Legends match stakes (draft, not deployed)
 /// @notice One transaction per player per match. Each player enters a match with a commitment to their 40-card
 ///         deck (the hash of its Legendary Cards serials) after approving this contract on LegendaryCards.
 ///         The match itself is played off-chain and replayed by the server (the referee). When it ends, anyone can

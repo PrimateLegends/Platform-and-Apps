@@ -1,4 +1,4 @@
-// Primate Legends: Battle Cards. First build: Inventory and Pre-Market. Battles come later.
+// Battle Card Legends. First build: Inventory and Pre-Market. Battles come later.
 
 import SwiftUI
 

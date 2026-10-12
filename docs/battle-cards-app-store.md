@@ -1,6 +1,6 @@
-# Battle Cards App Store prospect
+# Battle Card Legends App Store prospect
 
-We want Primate Legends: Battle Cards on iPhone and iPad. This page is the plan as it stands. It is
+We want Battle Card Legends on iPhone and iPad. This page is the plan as it stands. It is
 a prospect: nothing has been submitted to Apple and there is no release date.
 
 ## What ships first

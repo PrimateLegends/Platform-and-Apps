@@ -1,4 +1,4 @@
-"""Battle Cards rules v1: KI stat budget, keyword vocabulary, deck rules and clan accents."""
+"""Battle Card Legends rules v1: KI stat budget, keyword vocabulary, deck rules and clan accents."""
 from __future__ import annotations
 
 import re

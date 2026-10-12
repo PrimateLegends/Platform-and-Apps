@@ -1,4 +1,4 @@
-# primate-cards · Battle Cards catalog and balance rules
+# primate-cards · Battle Card Legends catalog and balance rules
 
 **Status: in development (rules v1).**
 

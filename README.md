@@ -35,7 +35,7 @@
 | [Pre-Market](apps/pre-market/) | Rules for trading sealed cards before they go on-chain: listings, filters, wallet-to-wallet checkout, linked Solana wallets | In development |
 | [Market engine](services/market-engine/) (Python) | $RYO ledger, card offers, airdrop split and rebalance, activity feed card references | Live rules |
 | [Card catalog](services/card-balance/) (Python) | All 205 card fronts with their KI, stats and text, checked against the stat budget, keyword vocabulary, deck rules and clan accents | Rules v1 |
-| [Battle Cards for iOS](apps/battle-cards-ios/) | SwiftUI draft of the iPhone and iPad app: Inventory and Pre-Market screens | Draft, not compiled yet |
+| [Battle Card Legends for iOS](apps/battle-cards-ios/) | SwiftUI draft of the iPhone and iPad app: Inventory and Pre-Market screens | Draft, not compiled yet |
 
 ## Pre-Market
 
@@ -98,9 +98,9 @@ match = apply(match, { type: 'attack', player: 0, attackers: [1] });
 const stake = settleStake(match);   // the 20 cards the winner takes
 ```
 
-## Battle Cards Appstore Prospect
+## Battle Card Legends App Store Prospect
 
-We want Battle Cards on iPhone and iPad. The first build is read-only: your **Inventory** (sealed
+We want Battle Card Legends on iPhone and iPad. The first build is read-only: your **Inventory** (sealed
 cards, packs and hints) and the **Pre-Market** (listings, filters, floor price), the same two
 things you can already do on the website. Battles come after.
 
@@ -175,7 +175,7 @@ people decide what ships.
 | [Solidity](https://soliditylang.org/) 0.8 | The contract drafts in [`contracts/`](contracts/) |
 | JavaScript (ES modules) | The apps in [`apps/`](apps/), with no framework and no build step |
 | [Python](https://www.python.org/) 3.10+ and `unittest` | The [market engine](services/market-engine/) and the [card catalog](services/card-balance/) |
-| Swift and SwiftUI | The [iOS draft](apps/battle-cards-ios/) of Battle Cards |
+| Swift and SwiftUI | The [iOS draft](apps/battle-cards-ios/) of Battle Card Legends |
 | [Node.js](https://nodejs.org/) and `node:test` | Tests and repository checks |
 | [ethers](https://docs.ethers.org/) | Wallet signatures and contract tests |
 | [EthereumJS VM](https://github.com/ethereumjs/ethereumjs-monorepo) and [solc](https://github.com/ethereum/solc-js) | Compiling and running the contracts locally |

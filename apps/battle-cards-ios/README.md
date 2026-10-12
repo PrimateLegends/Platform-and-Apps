@@ -1,6 +1,6 @@
-# Battle Cards for iOS (draft)
+# Battle Card Legends for iOS (draft)
 
-A first sketch of the iPhone and iPad app for Primate Legends: Battle Cards, written in Swift
+A first sketch of the iPhone and iPad app for Battle Card Legends, written in Swift
 with SwiftUI. It covers the two screens the first build will have:
 
 | Screen | What it does | Data |

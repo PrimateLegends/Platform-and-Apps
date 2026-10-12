@@ -1,4 +1,4 @@
-"""Primate Legends · Battle Cards: the card catalog and its balance rules (rules v1).
+"""Battle Card Legends: the card catalog and its balance rules (rules v1).
 
 - `load_catalog()`  every card front (PL-001..PL-205) with its KI cost, stats, type, rarity and text.
 - `budget_delta()`  how far a warrior sits from the KI stat budget.

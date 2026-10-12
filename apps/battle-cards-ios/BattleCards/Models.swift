@@ -1,4 +1,4 @@
-// Primate Legends: Battle Cards (iOS draft)
+// Battle Card Legends (iOS draft)
 // Data the app shows. Shapes follow the public read-only API of primatelegends.world
 // (GET /api/vault) and the Pre-Market rules in apps/pre-market.
 

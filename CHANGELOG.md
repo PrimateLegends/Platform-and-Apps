@@ -2,6 +2,12 @@
 
 All notable changes to this repository. Versions follow the live site's milestones.
 
+## 0.12.1
+
+### Changed
+- The card game is now called **Battle Card Legends** (was Battle Cards). Docs, contracts, the iOS draft and the
+  card-balance package use the new name. Folder names and code identifiers stay the same so existing links keep working.
+
 ## 0.12.0
 
 ### Added

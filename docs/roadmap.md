@@ -24,7 +24,7 @@ but may change. **Planned** is not built yet.
 | Agents | MCP server exposing the read-only vault API to any agent | Planned |
 | Game | Card Battles rules engine (rounds, Ki, keywords, Heroes, scoring) | In development |
 | Game | Seasonal Honor on-chain (HonorLedger) | Draft |
-| Game | Battle Cards for iPhone and iPad: inventory and Pre-Market first, battles after ([prospect](battle-cards-app-store.md), [draft](../apps/battle-cards-ios/)) | Prospect |
+| Game | Battle Card Legends for iPhone and iPad: inventory and Pre-Market first, battles after ([prospect](battle-cards-app-store.md), [draft](../apps/battle-cards-ios/)) | Prospect |
 | Market | Pre-Market: trade sealed cards wallet to wallet in ETH or USDC on Solana ([rules](pre-market.md)) | In development |
 | Market | Linked Solana wallets (up to 3 per profile) | In development |
 | On-chain | Sealed cards migrated 1:1 from the Pre-Market as ERC-1155 tokens ([LegendaryCards](../contracts/LegendaryCards.sol)) | Draft |
