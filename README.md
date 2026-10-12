@@ -184,7 +184,7 @@ people decide what ships.
 | [Cloudflare Workers and D1](https://developers.cloudflare.com/workers/) | The live site and its card vault API |
 | [ChatGPT](https://chatgpt.com/) and [Claude](https://claude.com/) | Drafting, refactoring and code review support |
 
-## License
+## License 2026/2027
 
 All rights reserved. The code is public so you can read and try it. The artwork, characters
 and names belong to Primate Legends. See [LICENSE](LICENSE).
