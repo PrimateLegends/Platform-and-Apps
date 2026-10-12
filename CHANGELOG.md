@@ -2,6 +2,31 @@
 
 All notable changes to this repository. Versions follow the live site's milestones.
 
+## 0.13.0
+
+### Added
+- **$RYO swap** (`docs/ryo-swap.md`): $RYO against ETH (Ethereum mainnet) and USDC (Solana), both ways, open to
+  holders of at least 2 Primate Legends warriors. $30,000 starting market cap (1,000,000,000 supply, $0.00003),
+  constant-product pool, slippage and minimum received, price impact.
+- `contracts/RyoSwapPool.sol`: holder-only constant-product $RYO/ETH pool. Opening price set by the seed,
+  liquidity added at the current ratio and never removed (no LP tokens, no withdraw), swaps with minimum output
+  and deadline, no fee, no owner. EVM tests.
+- `contracts/LiquidityVault.sol`: secondary vault whose ETH deposits count as pool liquidity. Counts deposits,
+  not the balance, so ETH moved on to the pool or bridged to Solana keeps counting; change returned inside its
+  own forward is not a deposit. EVM tests.
+- `contracts/PrimatesGate.sol`: the shared holder rule (`balanceOf` read live, `NotEnoughPrimates(held, needed)`).
+- **Market Holders tab** (`docs/market-holders.md`): wallets ranked by cards held, 50 per page, X handle, wallet
+  always shortened, Primates held (`None` when zero), 4-card preview, estimated value, and holder profiles behind
+  an opaque id (the full wallet never reaches the page).
+- `services/market-engine`: `primate_market.holders` (ranking, profile id, preview) and `primate_market.swap`
+  (quotes, holder rule, deposit counting). 8 new `unittest` tests.
+
+### Changed
+- Market tabs: Vault and Players removed, Holders added after Activity.
+- Market filters and the open card are kept in the address, so a refresh or a shared link opens the same view.
+- A new offer shows up in the card's offers right away, without reloading the page.
+- The top bar Swap button opens a menu: Swap Cards or Swap $RYO.
+
 ## 0.12.1
 
 ### Changed

@@ -284,3 +284,93 @@ test('BattleStakes: enter with one transaction, settle with the referee signatur
   assert.equal(await bal(alice, 11), 1n);
   await assert.rejects(stakes.call('setReferee', [anyone.toString()], { from: anyone }), { revert: 'NotAdmin' });
 });
+
+/* ---------- $RYO swap: holder-only constant-product pool + secondary liquidity vault ---------- */
+// Plain ETH transfer (no calldata) to a deployed contract; returns the revert name if any.
+async function sendEth(vm, iface, from, to, value) {
+  const r = await vm.evm.runCall({ caller: from, to, value, data: new Uint8Array(), gasLimit: 1_000_000n });
+  if (!r.execResult.exceptionError) return null;
+  const ret = bytesToHex(r.execResult.returnValue);
+  return ret !== '0x' ? iface.parseError(ret).name : 'revert';
+}
+
+test('RyoSwapPool: 2+ Primates to swap, constant product, slippage + deadline, liquidity only goes in', async () => {
+  const { vm, fund, balance, deploy } = await chain();
+  const team = addr(0x7ea), alice = addr(0xa1), bob = addr(0xb0b);
+  for (const a of [team, alice, bob]) await fund(a);
+  const ryo = await deploy('RyoToken.sol', 'RyoToken', [team.toString()], team);
+  const nft = await deploy('test/MockPrimates.sol', 'MockPrimates', [], team);
+  const pool = await deploy('RyoSwapPool.sol', 'RyoSwapPool', [ryo.at.toString(), nft.at.toString(), 2, team.toString()], team);
+  const RYO = 10n ** 18n, MAX = 2n ** 256n - 1n;
+  await ryo.call('approve', [pool.at.toString(), MAX], { from: team });
+
+  // seed: 10 ETH against 1,000,000 $RYO
+  await assert.rejects(pool.call('seed', [1_000_000n * RYO], { from: alice, value: 10n * ETH }), { revert: 'NotProvider' });
+  await pool.call('seed', [1_000_000n * RYO], { from: team, value: 10n * ETH });
+  await assert.rejects(pool.call('seed', [1n], { from: team, value: 1n }), { revert: 'AlreadySeeded' });
+  assert.equal((await pool.call('ryoPerEth')).value, 100_000n * RYO, 'opening price: 100,000 $RYO per ETH');
+
+  // the holder rule: 1 Primate isn't enough, 2 is
+  await nft.call('setBalance', [alice.toString(), 1]);
+  assert.deepEqual([...(await pool.call('canTrade', [alice.toString()])).value], [false, 1n]);
+  await assert.rejects(pool.call('swapEthForRyo', [0, 9999999999], { from: alice, value: ETH }), { revert: 'NotEnoughPrimates' });
+  await nft.call('setBalance', [alice.toString(), 2]);
+
+  // quote = reserveOut · in / (reserveIn + in); impact = in / (reserveIn + in)
+  const q = (await pool.call('quote', [ETH, true])).value;
+  assert.equal(q, (1_000_000n * RYO * ETH) / (11n * ETH));
+  assert.equal((await pool.call('priceImpactBps', [ETH, true])).value, 909n, '1 ETH into 10 ETH of depth moves the price 9.09%');
+  await assert.rejects(pool.call('swapEthForRyo', [q + 1n, 9999999999], { from: alice, value: ETH }), { revert: 'Slippage' });
+  await assert.rejects(pool.call('swapEthForRyo', [0, 1000], { from: alice, value: ETH, time: 2000 }), { revert: 'DeadlinePassed' });
+  const k0 = (await pool.call('reserveEth')).value * (await pool.call('reserveRyo')).value;
+  const s = await pool.call('swapEthForRyo', [q, 9999999999], { from: alice, value: ETH });
+  assert.equal(s.value, q);
+  assert.equal((await ryo.call('balanceOf', [alice.toString()])).value, q, 'alice got the quoted $RYO');
+  const k1 = (await pool.call('reserveEth')).value * (await pool.call('reserveRyo')).value;
+  assert.ok(k1 >= k0, 'x·y never shrinks');
+
+  // and back: $RYO -> ETH, paid in the same call
+  await ryo.call('approve', [pool.at.toString(), MAX], { from: alice });
+  const half = q / 2n, ethQ = (await pool.call('quote', [half, false])).value;
+  const before = await balance(alice);
+  await pool.call('swapRyoForEth', [half, ethQ, 9999999999], { from: alice });
+  assert.equal((await balance(alice)) - before, ethQ, 'alice received the quoted ETH (the in-process EVM charges no gas)');
+
+  // more liquidity at the current ratio: same price, deeper pool; nothing can be withdrawn
+  const p0 = (await pool.call('ryoPerEth')).value;
+  await pool.call('addLiquidity', [], { from: team, value: 5n * ETH });
+  const p1 = (await pool.call('ryoPerEth')).value;
+  assert.ok(p1 >= p0 && p1 - p0 <= 1n, 'price unchanged by adding liquidity');
+  assert.ok(!new Interface(artifact('RyoSwapPool.sol', 'RyoSwapPool').abi).fragments.some(f => f.type === 'function' && /withdraw|remove/i.test(f.name)), 'no way to remove liquidity');
+  assert.equal(await sendEth(vm, new Interface(artifact('RyoSwapPool.sol', 'RyoSwapPool').abi), bob, pool.at, ETH), 'UseSwap', 'plain ETH is refused');
+});
+
+test('LiquidityVault: every ETH deposit counts forever, forwards and change never change the total', async () => {
+  const { vm, fund, balance, deploy } = await chain();
+  const keeper = addr(0x6ee), alice = addr(0xa1), bob = addr(0xb0b), bridge = addr(0xb41d6e);
+  for (const a of [keeper, alice, bob]) await fund(a);
+  const vault = await deploy('LiquidityVault.sol', 'LiquidityVault', [keeper.toString()], keeper);
+  const iface = new Interface(artifact('LiquidityVault.sol', 'LiquidityVault').abi);
+  const bouncer = await deploy('test/Bouncer.sol', 'Bouncer', [], keeper);
+  const bIface = new Interface(artifact('test/Bouncer.sol', 'Bouncer').abi);
+
+  assert.equal(await sendEth(vm, iface, alice, vault.at, ETH), null);
+  assert.equal(await sendEth(vm, iface, bob, vault.at, ETH / 2n), null);
+  assert.equal(await sendEth(vm, iface, bob, vault.at, 0n), 'ZeroAmount');
+  assert.equal((await vault.call('totalDeposited')).value, 3n * ETH / 2n);
+  assert.equal((await vault.call('depositCount')).value, 2n);
+
+  // keeper bridges 1.2 ETH out (e.g. to build liquidity on Solana): deposits still count
+  await assert.rejects(vault.call('forward', [bridge.toString(), ETH, '0x', eventId('solana-bridge')], { from: alice }), { revert: 'NotKeeper' });
+  const f = await vault.call('forward', [bridge.toString(), 12n * ETH / 10n, '0x', eventId('solana-bridge')], { from: keeper });
+  assert.ok(f.logs.some(l => l.name === 'Forwarded'));
+  assert.equal(await balance(bridge), 12n * ETH / 10n);
+  assert.equal((await vault.call('declaredLiquidity')).value, 3n * ETH / 2n, 'forwarding does not lower declared liquidity');
+
+  // change coming back inside the vault's own forward is not a deposit
+  await vault.call('forward', [bouncer.at.toString(), 3n * ETH / 10n, bIface.encodeFunctionData('bounce', [ETH / 10n]), eventId('pool')], { from: keeper });
+  assert.equal(await balance(vault.at), ETH / 10n, 'the change came back');
+  assert.equal((await vault.call('totalDeposited')).value, 3n * ETH / 2n, 'but it is not counted as a deposit');
+  assert.equal((await vault.call('depositCount')).value, 2n);
+  assert.equal((await vault.call('totalForwarded')).value, 15n * ETH / 10n);
+});

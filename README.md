@@ -16,6 +16,8 @@
   <a href="docs/pre-market.md">Pre-Market</a> ·
   <a href="docs/card-reveal.md">Card reveal</a> ·
   <a href="docs/market-offers.md">Offers</a> ·
+  <a href="docs/ryo-swap.md">$RYO swap</a> ·
+  <a href="docs/market-holders.md">Holders</a> ·
   <a href="docs/battle-cards-app-store.md">App Store</a> ·
   <a href="contracts/">Contracts</a> ·
   <a href="docs/roadmap.md">Roadmap</a>
@@ -33,7 +35,7 @@
 | [Card Battles](apps/card-battles/) | Rules engine for the two-player card game (rules v1): KI and spare KI, attack token, CHALLENGE, combat keywords, equipment, ASCEND, half-deck stake, scoring and Honor | In development |
 | [Card reveal](apps/reveal/) | Reveal rules: hint-true fronts, tiers, copy caps, clans by fur colour, 35% of new claims revealed | Live |
 | [Pre-Market](apps/pre-market/) | Rules for trading sealed cards before they go on-chain: listings, filters, wallet-to-wallet checkout, linked Solana wallets | In development |
-| [Market engine](services/market-engine/) (Python) | $RYO ledger, card offers, airdrop split and rebalance, activity feed card references | Live rules |
+| [Market engine](services/market-engine/) (Python) | $RYO ledger, card offers, airdrop split and rebalance, activity feed card references, holders ranking, $RYO swap quotes | Live rules |
 | [Card catalog](services/card-balance/) (Python) | All 205 card fronts with their KI, stats and text, checked against the stat budget, keyword vocabulary, deck rules and clan accents | Rules v1 |
 | [Battle Card Legends for iOS](apps/battle-cards-ios/) | SwiftUI draft of the iPhone and iPad app: Inventory and Pre-Market screens | Draft, not compiled yet |
 

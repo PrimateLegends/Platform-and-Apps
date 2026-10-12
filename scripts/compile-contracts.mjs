@@ -13,6 +13,11 @@ export function compileAll() {
   for (const f of fs.readdirSync(DIR).filter(f => f.endsWith('.sol'))) {
     sources[f] = { content: fs.readFileSync(path.join(DIR, f), 'utf8') };
   }
+  // test-only helpers (mocks) live in contracts/test and are compiled as test/<name>.sol
+  const TEST_DIR = path.join(DIR, 'test');
+  for (const f of fs.readdirSync(TEST_DIR).filter(f => f.endsWith('.sol'))) {
+    sources['test/' + f] = { content: fs.readFileSync(path.join(TEST_DIR, f), 'utf8') };
+  }
   const input = {
     language: 'Solidity',
     sources,

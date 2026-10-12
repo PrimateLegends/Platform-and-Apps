@@ -13,6 +13,9 @@ so the community can review the design before anything goes on-chain.
 | [HonorLedger](HonorLedger.sol) | Merkle claims | Seasonal Card Battles Honor | Draft |
 | [RyoToken](RyoToken.sol) | ERC-20 | $RYO, fixed supply of 1,000,000,000 | Draft |
 | [OfferBook](OfferBook.sol) | — | $RYO offers on Legendary Cards, held in escrow until accepted, cancelled, rejected or expired | Draft |
+| [RyoSwapPool](RyoSwapPool.sol) | — | Holder-only $RYO/ETH constant-product pool: liquidity only goes in, swaps with minimum output and deadline | Draft |
+| [LiquidityVault](LiquidityVault.sol) | — | Secondary vault: every ETH deposit counts as pool liquidity, even after the ETH moves on | Draft |
+| [PrimatesGate](PrimatesGate.sol) | — | Shared rule: at least N Primate Legends warriors in the wallet, read live | Draft |
 | [BattleStakes](BattleStakes.sol) | — | Battle Card Legends stakes: one transaction per player per match, the referee-signed result moves half of the loser's deck to the winner | Draft |
 
 ## LegendaryCards: from Pre-Market to on-chain
@@ -57,6 +60,22 @@ The on-chain version of Pre-Market offers.
 
 The offer belongs to the card, not to the holder at offer time. No owner, no fee, no upgrade path,
 reentrancy guarded, state written before any external call.
+
+## RyoSwapPool and LiquidityVault
+
+The on-chain version of the `/swap-ryo` page ([docs/ryo-swap.md](../docs/ryo-swap.md)).
+
+1. The liquidity provider `seed`s the pool once: the ETH and $RYO amounts set the opening price
+   (a $30,000 market cap on 1,000,000,000 $RYO). `addLiquidity` adds more at the current ratio.
+   There is no LP token and no way to take liquidity out.
+2. `swapEthForRyo(minOut, deadline)` and `swapRyoForEth(amountIn, minOut, deadline)` are open to wallets holding
+   at least `minPrimates` warriors (2), checked live by `PrimatesGate`. Output is `R_out · in / (R_in + in)`,
+   no fee; `quote` and `priceImpactBps` give the page the same numbers.
+3. `LiquidityVault` takes ETH deposits from anyone. `totalDeposited` only goes up: the keeper can `forward` the
+   ETH (to the liquidity provider or a bridge to Solana) and the deposits still count. Change that comes back
+   during the vault's own forward is not a deposit.
+
+Reentrancy guarded, state written before external calls, plain ETH sent to the pool is refused.
 
 ## Checks
 

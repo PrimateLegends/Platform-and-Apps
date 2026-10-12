@@ -13,6 +13,8 @@ services/market-engine/
 │   ├── offers.py      OfferBook: place, cancel, reject, accept, sweep
 │   ├── airdrop.py     airdrop split (optional per-wallet cap) and the v1 rebalance
 │   ├── activity.py    which card(s) each activity event shows
+│   ├── holders.py     Holders tab ranking, opaque profile ids, card preview
+│   ├── swap.py        $RYO swap quotes, holder rule, secondary vault deposits
 │   └── errors.py      error codes shared with the web client
 └── tests/             unittest suites (no extra packages)
 ```
