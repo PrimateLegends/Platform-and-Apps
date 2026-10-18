@@ -35,7 +35,10 @@
 | [Card Battles](apps/card-battles/) | Rules engine for the two-player card game (rules v1): KI and spare KI, attack token, CHALLENGE, combat keywords, equipment, ASCEND, half-deck stake, scoring and Honor | In development |
 | [Card reveal](apps/reveal/) | Reveal rules: hint-true fronts, tiers, copy caps, clans by fur colour, 35% of new claims revealed | Live |
 | [Pre-Market](apps/pre-market/) | Rules for trading sealed cards before they go on-chain: listings, filters, wallet-to-wallet checkout, linked Solana wallets | In development |
-| [Market engine](services/market-engine/) (Python) | $RYO ledger, card offers, airdrop split and rebalance, activity feed card references, holders ranking, $RYO swap quotes | Live rules |
+| [Card transfers](apps/transfers/) | Send cards to any wallet: 5 $RYO per card, holds, burst check, recipient notices, your activity | Live |
+| [Bounties](apps/bounties/) | Opening Bounty bags: 1 scarce card you don't own yet + 10,000 to 25,000 $RYO | Live |
+| [Quests](apps/quests/) | Quest board: paused quests, Quest 5 Onyx Recruiting | Live |
+| [Market engine](services/market-engine/) (Python) | $RYO ledger, card offers, airdrop split and rebalance, activity feed card references, holders ranking, $RYO swap quotes, card transfers | Live rules |
 | [Card catalog](services/card-balance/) (Python) | All 205 card fronts with their KI, stats and text, checked against the stat budget, keyword vocabulary, deck rules and clan accents | Rules v1 |
 | [Battle Card Legends for iOS](apps/battle-cards-ios/) | SwiftUI draft of the iPhone and iPad app: Inventory and Pre-Market screens | Draft, not compiled yet |
 
@@ -60,6 +63,10 @@ The clan of a revealed card is the colour of the primates on it. Rules in [docs/
 
 Every card in the game is visible on the Pre-Market: listings first, then every unlisted card (with its own **Unlisted** filter). Anyone can offer $RYO for a card that isn't theirs: 1,000 to 10,000,000 $RYO, open for 1, 3, 7 or 30 days, locked until the holder accepts, the bidder cancels, the holder rejects or it expires. The activity feed is a tab of the market and shows the card each event moved. Rules in [docs/market-offers.md](docs/market-offers.md), engine in [`services/market-engine`](services/market-engine/), on-chain draft in [`OfferBook.sol`](contracts/OfferBook.sol).
 
+## Transfers, Bounties and Quest 5
+
+Cards can be sent to any wallet for 5 $RYO each ([docs/transfers.md](docs/transfers.md)); Bounty bags open into a scarce card you don't own yet plus 10,000 to 25,000 $RYO ([docs/bounties.md](docs/bounties.md)); Quest 5 Onyx Recruiting gives a free revealed card for 3 different Onyx purchases ([docs/quests.md](docs/quests.md)).
+
 ## Contracts
 
 | Contract | Purpose |
@@ -70,6 +77,7 @@ Every card in the game is visible on the Pre-Market: listings first, then every 
 | [`BattleStakes`](contracts/BattleStakes.sol) | One transaction per player per match; the referee-signed result moves half of the loser's deck to the winner |
 | [`RyoToken`](contracts/RyoToken.sol) | Fixed-supply $RYO ERC-20: 1,000,000,000 minted once, no mint, no owner |
 | [`OfferBook`](contracts/OfferBook.sol) | $RYO offers on Legendary Cards: escrowed bids, one-transaction accept, reclaim after expiry |
+| [`CardCourier`](contracts/CardCourier.sol) | External card transfers after migration: up to 20 cards in one transaction, flat $RYO fee per card to the vault |
 
 All drafts, not audited, not deployed. They compile with solc 0.8.28 and run in an in-process EVM in `npm test`.
 
@@ -134,11 +142,14 @@ Node 18 or newer and Python 3.10 or newer. The apps and the engine have no depen
 │   ├── legendary-cards-preview/   card vault UI preview (ES modules, no build step)
 │   ├── card-battles/              rules engine + tests
 │   ├── pre-market/                Pre-Market rules: listings, checkout, linked Solana wallets
+│   ├── transfers/                 card transfers: fee, holds, burst check, activity
+│   ├── bounties/                  opening Bounty bags
+│   ├── quests/                    quest board, Quest 5 Onyx Recruiting
 │   └── battle-cards-ios/          SwiftUI draft of the iOS app (Inventory, Pre-Market)
 ├── services/
 │   ├── market-engine/             Python: $RYO ledger, offers, airdrop rebalance, activity feed
 │   └── card-balance/              Python: the 205-card catalog and its balance rules
-├── contracts/                     Solidity drafts (LegendaryCards, RyoToken, OfferBook, PreMarketSettlement, HonorLedger, BattleStakes) + EVM tests
+├── contracts/                     Solidity drafts (LegendaryCards, RyoToken, OfferBook, CardCourier, PreMarketSettlement, HonorLedger, BattleStakes) + EVM tests
 ├── integrations/                  OpenClaw skill, ChatGPT app (planned)
 ├── docs/                          architecture, Card Battles, Pre-Market, App Store prospect, roadmap
 └── scripts/                       local server, repository checks, contract compiler

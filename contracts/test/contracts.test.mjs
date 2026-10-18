@@ -374,3 +374,40 @@ test('LiquidityVault: every ETH deposit counts forever, forwards and change neve
   assert.equal((await vault.call('depositCount')).value, 2n);
   assert.equal((await vault.call('totalForwarded')).value, 15n * ETH / 10n);
 });
+
+test('CardCourier: up to 20 cards in one transaction, flat $RYO fee per card to the vault', async () => {
+  const { fund, deploy } = await chain();
+  const admin = addr(0xa11ce), alice = addr(0xa1), bob = addr(0xb0b), vault = addr(0x7a017), dist = addr(0xd157);
+  for (const a of [admin, alice, bob, vault, dist]) await fund(a);
+  const cards = await deploy('LegendaryCards.sol', 'LegendaryCards', [admin.toString(), 'ipfs://cards/{id}.json'], admin);
+  const ryo = await deploy('RyoToken.sol', 'RyoToken', [dist.toString()], dist);
+  const FEE = 5n * ETH;
+  const courier = await deploy('CardCourier.sol', 'CardCourier', [cards.at.toString(), ryo.at.toString(), vault.toString(), FEE], admin);
+
+  // alice owns cards 11, 12, 13 (migrated) and 100 $RYO
+  const snap = [[11, alice, 1], [12, alice, 2], [13, alice, 0]];
+  const leaves = snap.map(([s, o, r]) => solidityPackedKeccak256(['uint256', 'address', 'uint8'], [s, o.toString(), r]));
+  const { root, proof } = tree(leaves);
+  await cards.call('commitSnapshot', [root, 'ipfs://s']);
+  await cards.call('migrate', [[11, 12, 13], snap.map(x => x[1].toString()), snap.map(x => x[2]), [proof(0), proof(1), proof(2)]]);
+  await ryo.call('transfer', [alice.toString(), 100n * ETH]);
+
+  // nothing approved yet: the whole send reverts, the fee included
+  await assert.rejects(courier.call('send', [bob.toString(), [11]], { from: alice }));
+  await ryo.call('approve', [courier.at.toString(), 1000n * ETH], { from: alice });
+  await assert.rejects(courier.call('send', [bob.toString(), [11]], { from: alice }), 'cards not approved: reverts');
+  assert.equal((await ryo.call('balanceOf', [alice.toString()])).value, 100n * ETH, 'no fee taken on a failed send');
+  await cards.call('setApprovalForAll', [courier.at.toString(), true], { from: alice });
+
+  assert.equal((await courier.call('feeFor', [2])).value, 2n * FEE);
+  const r = await courier.call('send', [bob.toString(), [11, 12]], { from: alice });
+  assert.equal(r.logs.filter(l => l.name === 'CardsSent').length, 1);
+  assert.deepEqual([...(await cards.call('balanceOfBatch', [[bob.toString(), bob.toString(), alice.toString()], [11, 12, 13]])).value], [1n, 1n, 1n]);
+  assert.equal((await ryo.call('balanceOf', [alice.toString()])).value, 90n * ETH);
+  assert.equal((await ryo.call('balanceOf', [vault.toString()])).value, 10n * ETH);
+
+  await assert.rejects(courier.call('send', [alice.toString(), [13]], { from: alice }), { revert: 'SelfTransfer' });
+  await assert.rejects(courier.call('send', [bob.toString(), []], { from: alice }), { revert: 'NoCards' });
+  await assert.rejects(courier.call('send', [bob.toString(), Array.from({ length: 21 }, (_, i) => i + 1)], { from: alice }), { revert: 'TooManyCards' });
+  await assert.rejects(courier.call('send', [bob.toString(), [11]], { from: alice }), 'a card already sent cannot move again');
+});

@@ -2,6 +2,26 @@
 
 All notable changes to this repository. Versions follow the live site's milestones.
 
+## 0.14.0
+
+### Added
+- **Card transfers** (`docs/transfers.md`): send up to 20 cards to any wallet for 5 $RYO per card (to the vault).
+  Wallets that never signed in still receive them (the page warns; cards and notice wait for the first sign-in).
+  Listed, escrowed and on-hold cards can't move; more than 7 transfers in 2 minutes asks for a security check.
+  New `/transfer` page: preview, transaction and inventory list, and your own activity (transfers and purchases).
+  Recipients get a "Card received" notice; transfers show in the activity feed.
+- `apps/transfers`: fee, holds, burst check, recipient notice, wallet activity. 6 tests.
+- `services/market-engine`: `primate_market.transfers` (`Courier`): cards and fee move together or not at all. 4 tests.
+- `contracts/CardCourier.sol`: external transfers after migration, up to 20 Legendary Cards per transaction with a
+  flat $RYO fee per card; holds nothing, no owner. EVM test.
+- **Bounties open** (`docs/bounties.md`): 1 scarce revealed card you don't own yet (Rare 80 / Legendary 18 / Astral 2)
+  plus 10,000 to 25,000 $RYO, with the pack-opening animation. Wallet drawer notice for unopened Bounties.
+  `apps/bounties`, 4 tests.
+- **Quest 5 Onyx Recruiting** (`docs/quests.md`): 3 different Onyx cards bought (listings or accepted offers) give
+  1 free revealed card, once per wallet. `apps/quests`, 3 tests.
+
+### Changed
+- Quests 1 and 2 are paused: no spots left. Claims made before the pause still pay.
 ## 0.13.0
 
 ### Added

@@ -15,6 +15,7 @@ so the community can review the design before anything goes on-chain.
 | [OfferBook](OfferBook.sol) | — | $RYO offers on Legendary Cards, held in escrow until accepted, cancelled, rejected or expired | Draft |
 | [RyoSwapPool](RyoSwapPool.sol) | — | Holder-only $RYO/ETH constant-product pool: liquidity only goes in, swaps with minimum output and deadline | Draft |
 | [LiquidityVault](LiquidityVault.sol) | — | Secondary vault: every ETH deposit counts as pool liquidity, even after the ETH moves on | Draft |
+| [CardCourier](CardCourier.sol) | — | External card transfers after migration: up to 20 Legendary Cards per transaction, flat $RYO fee per card to the vault; holds nothing | Draft |
 | [PrimatesGate](PrimatesGate.sol) | — | Shared rule: at least N Primate Legends warriors in the wallet, read live | Draft |
 | [BattleStakes](BattleStakes.sol) | — | Battle Card Legends stakes: one transaction per player per match, the referee-signed result moves half of the loser's deck to the winner | Draft |
 

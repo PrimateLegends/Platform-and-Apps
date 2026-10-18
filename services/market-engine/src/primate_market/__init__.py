@@ -11,6 +11,7 @@ from .airdrop import split, rebalance, Allocation
 from .activity import CardRef, cards_for
 from .holders import HeldCard, Holder, rank, holder_id
 from .swap import Pool, Transfer, declared_deposits_wei, can_trade
+from .transfers import Courier, VaultCard, FEE_PER_CARD
 
 __all__ = [
     "MarketError",
@@ -20,6 +21,7 @@ __all__ = [
     "CardRef", "cards_for",
     "HeldCard", "Holder", "rank", "holder_id",
     "Pool", "Transfer", "declared_deposits_wei", "can_trade",
+    "Courier", "VaultCard", "FEE_PER_CARD",
 ]
 
-__version__ = "0.13.0"
+__version__ = "0.14.0"
