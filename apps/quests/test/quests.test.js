@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { boardState, onyxProgress, leftMessage, rewardDue } from '../src/quests.js';
+import { boardState, onyxProgress, leftMessage, rewardDue, questsOpenAt, waitLabel, NEW_ACCOUNT_WAIT_MS, clanCashback } from '../src/quests.js';
 
 const T0 = Date.UTC(2026, 9, 18);
 const buy = (card, clans, at = T0 + 1000, via = 'listing') => ({ card, clans, at, via });
@@ -22,6 +22,21 @@ test('Onyx Recruiting: 3 different Onyx cards, listings and accepted offers both
   p = onyxProgress([buy(9, ['onyx'], T0 - 1), buy(1, ['onyx']), buy(2, ['onyx']), buy(3, ['onyx']), buy(4, ['onyx'])], { start: T0 });
   assert.deepEqual(p.cards, [1, 2, 3], 'purchases before the start do not count; extra ones are ignored');
   assert.equal(p.complete, true);
+});
+
+test('new accounts wait 48h from their earliest activity', () => {
+  const H = 3600000;
+  assert.equal(questsOpenAt([T0 + 5 * H, null, T0, undefined], T0 + 99 * H), T0 + NEW_ACCOUNT_WAIT_MS, 'the earliest activity of any kind starts the wait');
+  assert.equal(questsOpenAt([], T0), T0 + NEW_ACCOUNT_WAIT_MS, 'a wallet never seen waits from now');
+  assert.equal(waitLabel(T0 + 6.5 * H, T0), 'New account · opens in 7h');
+  assert.equal(waitLabel(T0, T0 + 1), '');
+});
+
+test('Quest 4 cashback: 90% of the price, never above the estimate or 20,000 $RYO', () => {
+  assert.deepEqual(clanCashback(1000, 5000), { amount: 900, limitedBy: 'price' });
+  assert.deepEqual(clanCashback(900000, 4000), { amount: 3600, limitedBy: 'estimate' }, 'an overpriced self-sale earns only the estimate');
+  assert.deepEqual(clanCashback(700000, 680000), { amount: 20000, limitedBy: 'cap' });
+  assert.equal(clanCashback(22222, 22222).amount, 19999, 'just under the cap stays exact');
 });
 
 test('the reward goes out once per wallet', () => {

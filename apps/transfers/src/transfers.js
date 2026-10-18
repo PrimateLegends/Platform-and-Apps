@@ -8,7 +8,10 @@ export const TRANSFER = Object.freeze({
   burst: 7,               // transfers allowed inside the window before a captcha is asked
   windowMs: 2 * 60 * 1000,
   claimHoldMs: 48 * 3600 * 1000,
-  packHoldMs: 72 * 3600 * 1000
+  packHoldMs: 72 * 3600 * 1000,
+  // A card that arrived by transfer can be listed at once, but sold to the vault only after this wait: otherwise a
+  // fresh wallet could take over the weekly vault-sale allowance of another one.
+  vaultSaleWaitMs: 7 * 24 * 3600 * 1000
 });
 const ADDRESS = /^0x[0-9a-f]{40}$/;
 const CLAIMED = new Set(['claim', 'daily-claim']);
@@ -20,6 +23,23 @@ export function heldUntil(card, now) {
   const hold = card.origin === 'pack' ? TRANSFER.packHoldMs : CLAIMED.has(card.origin) ? TRANSFER.claimHoldMs : 0;
   const until = card.pulledAt + hold;
   return hold && until > now ? until : 0;
+}
+
+/** ms timestamp when the vault buys a card received by transfer, or 0 when it can sell now. receivedAt: null = not transferred. */
+export function vaultSaleOpensAt(receivedAt, now) {
+  if (!Number.isFinite(receivedAt)) return 0;
+  const at = receivedAt + TRANSFER.vaultSaleWaitMs;
+  return at > now ? at : 0;
+}
+
+/**
+ * Escrow swaps follow the same holds as the market: a card on its pack or claim hold can't be locked or swapped.
+ * @returns {string} '' or the hold code
+ */
+export function escrowProblem(card, now) {
+  if (card.location !== 'vault') return card.location === 'listed' ? 'listed' : 'in-escrow';
+  if (heldUntil(card, now)) return card.origin === 'pack' ? 'pack-hold' : 'claim-hold';
+  return '';
 }
 
 /**

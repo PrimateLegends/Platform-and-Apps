@@ -11,6 +11,9 @@ drawer and from My Collection.
 - Up to **20 cards** per transfer, one free signature (no transaction, no gas).
 - Cards that can't move: listed on the market, locked in escrow, or still on their hold (48 hours after a claim,
   72 hours after a pack opening). The same holds apply to selling.
+- A card received by transfer can be listed right away, but **sold to the vault only 7 days after it arrived**.
+  The weekly vault-sale allowance belongs to the wallet, not to whoever it hands cards to.
+- Escrow swaps keep the same holds as the market: a card still on its pack or claim hold can't be locked or swapped.
 - No daily limit. More than **7 transfers inside 2 minutes** asks for a quick security check.
 - The page waits about a second after the signature before the success window, so the result never feels instant.
 - The recipient gets a **Card received** notice in the wallet drawer. Every transfer also shows up in the public

@@ -17,12 +17,19 @@ and a list of possible clans. Reveals give a sealed card one of the card fronts.
   count for none. The picker prefers fronts of the card's top hinted clan.
 - **Batches never re-roll.** A revealed card keeps its front forever; a new batch only reveals sealed cards.
 - **Claims.** A newly claimed card comes already revealed 35% of the time.
+- **Clan-first reveal.** A full reveal of a rarity rolls the clan before the front: 80% the card's most likely
+  hinted clan, 20% its second one. The best front of that clan follows (tier, hinted type, fewest copies). A clan
+  with no front left falls back to the other hinted clan, then to any front of the tier.
+- **1 of 1 cards.** A new set of unique cards can be scheduled on given claims (for example the 2nd, 4th, 6th, 8th
+  and 10th claim after a launch time); every other claim stays a normal one.
 
 ## Batches so far
 | Batch | Revealed | Notes |
 | --- | --- | --- |
 | 1 | 80% of all cards | 118 fronts (PL-001..118) |
 | 2 | 83.8% | +30 clan variants (PL-119..148): every common Attack/Defense card in up to 4 clans |
+
+| 3 | every Common, Uncommon and Rare card | clan-first reveal, 80% top clan / 20% second clan |
 
 Batch 2 aimed at 87% but stayed strict: the cards still sealed mostly hint Evasion or Healing, so the next
 art batches focus on those types and on Epic fronts.

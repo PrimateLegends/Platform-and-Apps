@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { FRONTS } from '../src/fronts.js';
-import { TIERS, COPY_CAP, pick, claimReveal, planReveal, front, CLAIM_REVEAL_ODDS } from '../src/reveal.js';
+import { TIERS, COPY_CAP, pick, claimReveal, planReveal, planClanReveal, promoUnique, front, CLAIM_REVEAL_ODDS } from '../src/reveal.js';
 import { furFamily, clansFromFur } from '../src/clans.js';
 
 // Small seeded generator so every run is the same.
@@ -72,4 +72,36 @@ test('clans by fur colour, with the team rules', () => {
   assert.deepEqual(clansFromFur([[117, 188, 118]], 'brown'), ['brown']);
   assert.deepEqual(clansFromFur([[244, 182, 34], [237, 97, 21]], 'golden-ape'), ['golden-ape', 'orange']);
   assert.throws(() => furFamily('red'), /rgb/);
+});
+
+test('clan reveal: ~80% top clan, ~20% second clan, every sealed card of the chosen rarities', () => {
+  const rnd = seeded(11), cards = [];
+  for (let id = 0; id < 400; id++) cards.push({ id, rarity: id % 2 ? 'common' : 'uncommon', type: 'attack', clans: [['brown', 55], ['purple', 30], ['pink', 15]], front: 0 });
+  cards.push({ id: 900, rarity: 'legendary', type: 'attack', clans: [['brown', 90]], front: 0 });
+  cards.push({ id: 901, rarity: 'common', type: 'attack', clans: [['brown', 90]], front: 5 });
+  const { plan, stats } = planClanReveal(cards, { rnd, capMult: 20 });
+  assert.equal(plan.length, 400, 'legendary and already revealed cards are left alone');
+  const top = plan.filter(p => p.clan === 'brown').length, second = plan.filter(p => p.clan === 'purple').length;
+  assert.equal(top + second, 400, 'only the top two clans');
+  assert.ok(Math.abs(top / 400 - 0.8) < 0.06, 'top share ' + top / 400);
+  plan.forEach(p => assert.ok(front(p.front).clans.includes(p.clan)));
+  assert.equal(stats.common.fallback + stats.uncommon.fallback, 0);
+  assert.throws(() => planClanReveal(cards, { top: 2 }), /top/);
+});
+
+test('clan reveal: a full clan falls back to the other hinted clan, then to any front of the tier', () => {
+  const used = new Map(FRONTS.filter(f => f.rarity === 'epic' && f.clans.includes('pink')).map(f => [f.n, COPY_CAP.epic]));
+  const cards = [...used].map(([n, k], i) => Array.from({ length: k }, (_, j) => ({ id: 'x' + i + '-' + j, rarity: 'rare', type: 'attack', clans: [], front: n }))).flat();
+  cards.push({ id: 1, rarity: 'rare', type: 'attack', clans: [['pink', 70]], front: 0 });
+  const { plan, stats } = planClanReveal(cards, { rnd: seeded(3), top: 1 });
+  assert.equal(plan.length, 1);
+  assert.equal(front(plan[0].front).rarity, 'epic');
+  assert.equal(stats.rare.fallback, 1);
+});
+
+test('claim promo: unique 1 of 1 cards land on the scheduled claims only', () => {
+  const opts = { uniques: [538, 539], taken: new Set([538]) };
+  assert.equal(promoUnique(1, opts), 0);
+  assert.equal(promoUnique(2, opts), 539);
+  assert.equal(promoUnique(4, { ...opts, taken: new Set([538, 539]) }), 0, 'all taken: a normal claim');
 });

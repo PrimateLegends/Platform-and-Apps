@@ -12,6 +12,7 @@ from .activity import CardRef, cards_for
 from .holders import HeldCard, Holder, rank, holder_id
 from .swap import Pool, Transfer, declared_deposits_wei, can_trade
 from .transfers import Courier, VaultCard, FEE_PER_CARD
+from .signatures import is_low_s, require_low_s
 
 __all__ = [
     "MarketError",
@@ -22,6 +23,7 @@ __all__ = [
     "HeldCard", "Holder", "rank", "holder_id",
     "Pool", "Transfer", "declared_deposits_wei", "can_trade",
     "Courier", "VaultCard", "FEE_PER_CARD",
+    "is_low_s", "require_low_s",
 ]
 
-__version__ = "0.14.0"
+__version__ = "0.15.0"

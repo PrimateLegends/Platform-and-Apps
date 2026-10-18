@@ -5,10 +5,23 @@
 | 1 | Quote a post | 10,000 $RYO a week | Paused: no spots left |
 | 2 | Tag 1 friend | 10,000 $RYO a week | Paused: no spots left |
 | 3 | Follow the game account | 7,000 $RYO, 100 spots | Open |
-| 4 | Clan cashback: your first card of 2 new clans | 90% of the price back | Open |
+| 4 | Clan cashback: your first card of 2 new clans | 90% of the price back, up to 20,000 $RYO | Open |
 | 5 | **Onyx Recruiting** | 1 free card, revealed | Open |
 
 A paused quest stays on the board with its reason and takes no new claims; claims made before the pause still pay.
+
+## New accounts
+
+Quests 4 and 5 count purchases from **48 hours after a wallet's first activity** on the site: its first sign-in,
+$RYO movement, market sale or listing, card transfer, claimed card or pack, whichever came first. Purchases made
+inside those 48 hours never count. The quest page and the market show "New account · opens in Xh" meanwhile.
+
+## Quest 4: Clan cashback
+
+- After at least 2 card purchases, your first listing bought from one of your 2 quest clans pays part of the price
+  back right away. Accepted offers don't count.
+- The payout is 90% of the price, never more than 90% of the card's estimated value, and **never more than
+  20,000 $RYO**. Once per wallet, never resets.
 
 ## Quest 5: Onyx Recruiting
 

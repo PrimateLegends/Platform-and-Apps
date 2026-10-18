@@ -29,12 +29,12 @@ function clansOf(card) {
 }
 
 /** How well `f` fits `card`, or -Infinity when it may not be given. */
-export function fit(card, f, used, { strict = true } = {}) {
+export function fit(card, f, used, { strict = true, capMult = 1 } = {}) {
   const tiers = TIERS[card.rarity];
   if (!tiers) throw new Error('unknown rarity: ' + card.rarity);
   const tier = tiers.indexOf(f.rarity);
   const copies = used.get(f.n) || 0;
-  if (tier < 0 || copies >= COPY_CAP[f.rarity]) return -Infinity;
+  if (tier < 0 || copies >= COPY_CAP[f.rarity] * capMult) return -Infinity;
   const typeOk = !card.type || f.type === card.type;
   if (strict && !typeOk) return -Infinity;
   let s = typeOk ? 20 : 0;
@@ -106,4 +106,60 @@ export function planReveal(cards, { pct = 0.8, strict = true, rnd = Math.random 
     st.short = Math.max(0, need);
   }
   return { plan, stats, used };
+}
+
+/**
+ * Clan-first reveal of every sealed card of `rarities`. The clan is rolled before the front: `top` of the time the
+ * card's most likely hinted clan, otherwise its second one (a single hinted clan is always used). Then the best
+ * front of that clan is picked (tier, hinted type, fewest copies). When that clan has no front with room left, the
+ * other hinted clan is tried, then any front of the tier; those cards are counted as `fallback`.
+ * `capMult` raises every copy cap, for tiers whose fronts are all at their cap.
+ * Returns { plan: [{ id, front, clan }], stats, used }.
+ */
+export const CLAN_TOP_ODDS = 0.8;
+export function planClanReveal(cards, { rarities = ['common', 'uncommon', 'rare'], top = CLAN_TOP_ODDS, capMult = 1, rnd = Math.random } = {}) {
+  if (!(top >= 0 && top <= 1)) throw new Error('top must be in [0, 1]');
+  const used = new Map();
+  for (const c of cards) if (c.front) used.set(c.front, (used.get(c.front) || 0) + 1);
+  const bestOf = (card, only) => {
+    for (const strict of [true, false]) {
+      let best = 0, bestScore = -Infinity;
+      for (const f of FRONTS) {
+        if (only && !f.clans.includes(only)) continue;
+        const s = fit(card, f, used, { strict, capMult });
+        if (s === -Infinity) continue;
+        const v = s + rnd() * 0.5;
+        if (v > bestScore) { bestScore = v; best = f.n; }
+      }
+      if (best) return best;
+    }
+    return 0;
+  };
+  const plan = [], stats = {};
+  for (const c of shuffled(cards.filter(x => !x.front && rarities.includes(x.rarity)), rnd)) {
+    const st = stats[c.rarity] = stats[c.rarity] || { sealed: 0, revealed: 0, topClan: 0, secondClan: 0, fallback: 0, short: 0 };
+    st.sealed++;
+    const clans = clansOf(c).map(x => x[0]);
+    const roll = clans.length > 1 && rnd() >= top ? 1 : 0;
+    const order = [clans[roll], clans[1 - roll]].filter(Boolean);
+    let n = 0, clan = null;
+    for (const k of order) if (!n && (n = bestOf(c, k))) clan = k;
+    if (!n) n = bestOf(c, null);
+    if (!n) { st.short++; continue; }
+    used.set(n, (used.get(n) || 0) + 1);
+    plan.push({ id: c.id, front: n, clan });
+    st.revealed++;
+    if (clan === clans[0]) st.topClan++; else if (clan && clan === clans[1]) st.secondClan++;
+    if (clan !== order[0]) st.fallback++;
+  }
+  return { plan, stats, used };
+}
+
+/**
+ * Claim promo for new 1 of 1 cards: after `start`, the claims numbered in `slots` (counted site-wide from 1) carry
+ * the next unique card still unclaimed; every other claim is a normal one. Returns the unique's number or 0.
+ */
+export function promoUnique(claimIndex, { slots = [2, 4, 6, 8, 10], uniques = [], taken = new Set() } = {}) {
+  if (!slots.includes(claimIndex)) return 0;
+  return uniques.find(n => !taken.has(n)) || 0;
 }

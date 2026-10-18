@@ -2,6 +2,29 @@
 
 All notable changes to this repository. Versions follow the live site's milestones.
 
+## 0.15.0
+
+### Added
+- **New-account wait for quests 4 and 5** (`docs/quests.md`): purchases count from 48 hours after a wallet's first
+  activity of any kind. `apps/quests`: `questsOpenAt`, `waitLabel`. 1 test.
+- **Quest 4 cashback cap**: 90% of the price, never above 90% of the card's estimate and never above 20,000 $RYO
+  per wallet. `apps/quests`: `clanCashback`. 1 test.
+- **Clan-first reveal** (`docs/card-reveal.md`): every sealed Common, Uncommon and Rare card revealed, the clan
+  rolled first (80% top hinted clan, 20% second), with fallbacks when a clan has no front left.
+  `apps/reveal`: `planClanReveal`. 2 tests.
+- **1 of 1 claim promo**: unique cards scheduled on given claims. `apps/reveal`: `promoUnique`. 1 test.
+- `services/market-engine`: `primate_market.signatures`, low-s rule for signed actions, so a used signature can't
+  come back as its malleated twin. 3 tests.
+
+### Changed
+- Cards received by transfer reach the vault-sale queue 7 days after they arrive (listing stays open at once), and
+  escrow swaps keep the market's pack and claim holds (`docs/transfers.md`). `apps/transfers`: `vaultSaleOpensAt`,
+  `escrowProblem`. 1 test.
+- The market card view shows who holds or lists the card, linked to the holder profile (opaque id, never the full
+  wallet).
+- The activity feed's Refresh button also refreshes the market's total volume.
+- "See my card" after Quest 5 opens that card in My Collection.
+
 ## 0.14.0
 
 ### Added

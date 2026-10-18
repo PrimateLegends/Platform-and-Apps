@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { TRANSFER, fee, heldUntil, transferProblem, needsCaptcha, recipientNotice, walletActivity } from '../src/transfers.js';
+import { TRANSFER, fee, heldUntil, transferProblem, needsCaptcha, recipientNotice, walletActivity, vaultSaleOpensAt, escrowProblem } from '../src/transfers.js';
 
 const NOW = Date.UTC(2026, 9, 18, 12);
 const ALICE = '0x' + 'a'.repeat(40), BOB = '0x' + 'b'.repeat(40);
@@ -55,4 +55,15 @@ test('wallet activity: transfers both ways and purchases, newest first', () => {
     [{ from: ALICE, to: BOB, cards: [1, 6], at: 30 }, { from: BOB, to: ALICE, cards: [7], at: 10 }],
     [{ buyer: ALICE, seller: BOB, card: 8, price: 2000, at: 20, via: 'listing' }, { buyer: BOB, seller: ALICE, card: 9, price: 1, at: 40, via: 'offer' }]);
   assert.deepEqual(rows.map(r => r.kind), ['sent', 'bought', 'received']);
+});
+
+test('a transferred card waits 7 days for the vault, and escrow keeps the market holds', () => {
+  const got = NOW - 24 * 3600e3;
+  assert.equal(vaultSaleOpensAt(got, NOW), got + TRANSFER.vaultSaleWaitMs);
+  assert.equal(vaultSaleOpensAt(NOW - TRANSFER.vaultSaleWaitMs - 1, NOW), 0);
+  assert.equal(vaultSaleOpensAt(null, NOW), 0, 'cards that never moved sell as before');
+  assert.equal(escrowProblem(vault.get(2), NOW), 'pack-hold');
+  assert.equal(escrowProblem(vault.get(3), NOW), 'claim-hold');
+  assert.equal(escrowProblem(vault.get(4), NOW), 'listed');
+  assert.equal(escrowProblem(vault.get(6), NOW), '', 'the pack hold is over after 72h');
 });
