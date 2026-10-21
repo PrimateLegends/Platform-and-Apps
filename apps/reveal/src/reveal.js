@@ -163,3 +163,30 @@ export function promoUnique(claimIndex, { slots = [2, 4, 6, 8, 10], uniques = []
   if (!slots.includes(claimIndex)) return 0;
   return uniques.find(n => !taken.has(n)) || 0;
 }
+
+/**
+ * Least-used reveal: every sealed card (any rarity) gets, inside its tiers, the front with the FEWEST copies right
+ * now; equal counts go to the best fit (type, clans), then to `rnd`. Spreads the artworks so the same few fronts
+ * don't keep coming back. Scarcest rarities pick first. Exclusive fronts never come out of a reveal.
+ * @param {Array<{ no: number, rarity: string, type?: string, clans?: Array<[string, number]> }>} sealed
+ * @param {Map<number, number>} used  front number -> copies already out (not changed; a copy is returned)
+ * @returns {{ plan: Array<{ no: number, front: number }>, used: Map<number, number>, short: number[] }}
+ */
+export function planSpreadReveal(sealed, used, { rnd = Math.random, fronts = FRONTS } = {}) {
+  const counts = new Map(used), plan = [], short = [];
+  const cards = [...sealed].sort((a, b) => ORDER.indexOf(a.rarity) - ORDER.indexOf(b.rarity));
+  for (const card of cards) {
+    let best = null;
+    for (const f of fronts) {
+      if (f.exclusive) continue;
+      const s = fit(card, f, counts, { strict: false, capMult: Infinity });
+      if (s === -Infinity) continue;
+      const key = [counts.get(f.n) || 0, -s, rnd()];
+      if (!best || key[0] < best.key[0] || (key[0] === best.key[0] && (key[1] < best.key[1] || (key[1] === best.key[1] && key[2] < best.key[2])))) best = { f, key };
+    }
+    if (!best) { short.push(card.no); continue; }
+    counts.set(best.f.n, (counts.get(best.f.n) || 0) + 1);
+    plan.push({ no: card.no, front: best.f.n });
+  }
+  return { plan, used: counts, short };
+}

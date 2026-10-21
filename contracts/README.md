@@ -18,6 +18,8 @@ so the community can review the design before anything goes on-chain.
 | [CardCourier](CardCourier.sol) | — | External card transfers after migration: up to 20 Legendary Cards per transaction, flat $RYO fee per card to the vault; holds nothing | Draft |
 | [PrimatesGate](PrimatesGate.sol) | — | Shared rule: at least N Primate Legends warriors in the wallet, read live | Draft |
 | [BattleStakes](BattleStakes.sol) | — | Battle Card Legends stakes: one transaction per player per match, the referee-signed result moves half of the loser's deck to the winner | Draft |
+| [EthTopUpRouter](EthTopUpRouter.sol) | — | Pay the rest of a $RYO purchase with ETH: platform-signed quotes (buyer, minimum ETH, expiry), each paid once, ETH forwarded to the vault in the same call | Draft |
+| [CollectorBoost](CollectorBoost.sol) | — | Collector Boost claims: a holder of a partner ERC-721 claims each collection once (bps per partner, owner-managed) | Draft |
 
 ## LegendaryCards: from Pre-Market to on-chain
 

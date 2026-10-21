@@ -38,3 +38,10 @@ art batches focus on those types and on Epic fronts.
 Revealed cards show their front everywhere (Market, My Collection, Cards, Swap, wallet drawer). Opening a
 card spins it twice in one second with the back on the other face; there is no hover animation, to keep
 grids light. The Market clan filter and search (card number, `PL-049`, or card name) use the revealed front.
+
+## Least-used reveal
+
+A reveal can also spread the artworks: every sealed card, of any rarity, gets the front of its tier with the
+**fewest copies** at that moment (ties go to the best fit for its type and clans). Scarcer rarities pick first and
+exclusive fronts never come out. Used to reveal every remaining sealed card at once without piling more copies on
+the same few fronts. `apps/reveal`: `planSpreadReveal`.

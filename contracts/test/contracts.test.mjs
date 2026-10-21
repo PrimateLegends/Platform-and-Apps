@@ -411,3 +411,52 @@ test('CardCourier: up to 20 cards in one transaction, flat $RYO fee per card to 
   await assert.rejects(courier.call('send', [bob.toString(), Array.from({ length: 21 }, (_, i) => i + 1)], { from: alice }), { revert: 'TooManyCards' });
   await assert.rejects(courier.call('send', [bob.toString(), [11]], { from: alice }), 'a card already sent cannot move again');
 });
+
+test('EthTopUpRouter: a signed quote pays once, straight to the vault, $RYO credit in the event', async () => {
+  const { fund, balance, deploy } = await chain();
+  const owner = addr(0x0a), buyer = addr(0xb1), other = addr(0xb2), vault = addr(0x7a01);
+  for (const a of [owner, buyer, other]) await fund(a);
+  const signer = new Wallet('0x' + '33'.repeat(32));
+  const router = await deploy('EthTopUpRouter.sol', 'EthTopUpRouter', [vault.toString(), signer.address, owner.toString()], owner);
+  const WEI = 98_000_000_000n, MIN = 450_000_000_000_000n, NOW = 2_000_000_000;
+  const quoteId = keccak256(getBytes('0x' + '01'.repeat(32)));
+  const minWei = 30_000n * WEI;                          // 30,000 $RYO short = 0.00294 ETH
+  const sig = async (who, id, min, exp) => signer.signMessage(getBytes((await router.call('quoteDigest', [who.toString(), id, min, exp])).value));
+  const good = await sig(buyer, quoteId, minWei, NOW + 60);
+  await assert.rejects(router.call('pay', [quoteId, minWei, NOW + 60, good], { from: buyer, value: minWei - 1n, time: NOW }), { revert: 'Underpaid' });
+  await assert.rejects(router.call('pay', [quoteId, minWei, NOW + 60, good], { from: other, value: minWei, time: NOW }), { revert: 'BadSignature' }, 'a quote only works for its buyer');
+  await assert.rejects(router.call('pay', [quoteId, minWei, NOW + 60, good], { from: buyer, value: minWei, time: NOW + 61 }), { revert: 'Expired' });
+  const forged = await new Wallet('0x' + '44'.repeat(32)).signMessage(getBytes((await router.call('quoteDigest', [buyer.toString(), quoteId, minWei, NOW + 60])).value));
+  await assert.rejects(router.call('pay', [quoteId, minWei, NOW + 60, forged], { from: buyer, value: minWei, time: NOW }), { revert: 'BadSignature' });
+  const r = await router.call('pay', [quoteId, minWei, NOW + 60, good], { from: buyer, value: minWei + 5n * WEI, time: NOW });
+  const ev = r.logs.find(l => l.name === 'TopUp');
+  assert.equal(ev.args.ryoCredit, 30_005n, 'the overpay is credited too');
+  assert.equal(await balance(vault), minWei + 5n * WEI, 'all ETH forwarded to the vault');
+  assert.equal(await balance(router.at), 0n, 'the router keeps nothing');
+  await assert.rejects(router.call('pay', [quoteId, minWei, NOW + 60, good], { from: buyer, value: minWei, time: NOW }), { revert: 'QuoteUsed' });
+  const tiny = keccak256(getBytes('0x' + '02'.repeat(32)));
+  await assert.rejects(router.call('pay', [tiny, 1000n, NOW + 60, await sig(buyer, tiny, 1000n, NOW + 60)], { from: buyer, value: 1000n, time: NOW }), { revert: 'BelowMinimum' });
+  assert.equal((await router.call('MIN_PAYMENT')).value, MIN);
+  await assert.rejects(router.call('setQuoteSigner', [other.toString()], { from: buyer }), { revert: 'NotOwner' });
+});
+
+test('CollectorBoost: holders claim each partner collection once; the owner manages partners', async () => {
+  const { fund, deploy } = await chain();
+  const owner = addr(0x0b), alice = addr(0xa2), bob = addr(0xb3);
+  for (const a of [owner, alice, bob]) await fund(a);
+  const normies = await deploy('test/MockPrimates.sol', 'MockPrimates', [], owner);
+  const mayc = await deploy('test/MockPrimates.sol', 'MockPrimates', [], owner);
+  const boost = await deploy('CollectorBoost.sol', 'CollectorBoost', [owner.toString()], owner);
+  await boost.call('setPartner', [normies.at.toString(), 5_000]);                       // Normies +50%
+  await boost.call('setPartner', [mayc.at.toString(), 2_500]);
+  await assert.rejects(boost.call('setPartner', [mayc.at.toString(), 2_500], { from: alice }), { revert: 'NotOwner' });
+  await normies.call('setBalance', [alice.toString(), 1]);
+  await mayc.call('setBalance', [alice.toString(), 2]);
+  const r = await boost.call('claim', [[normies.at.toString(), mayc.at.toString()]], { from: alice });
+  assert.deepEqual(r.logs.filter(l => l.name === 'BoostClaimed').map(l => Number(l.args.bps)), [5000, 2500]);
+  await assert.rejects(boost.call('claim', [[normies.at.toString(), mayc.at.toString()]], { from: alice }), { revert: 'NothingToClaim' }, 'once per collection');
+  await assert.rejects(boost.call('claimOne', [normies.at.toString()], { from: bob }), { revert: 'NotHeld' });
+  await assert.rejects(boost.call('claimOne', [alice.toString()], { from: bob }), { revert: 'NotAPartner' });
+  await boost.call('setPartner', [mayc.at.toString(), 0]);
+  assert.equal((await boost.call('claimed', [alice.toString(), mayc.at.toString()])).value, true, 'removing a partner keeps past claims');
+});

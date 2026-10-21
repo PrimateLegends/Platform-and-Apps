@@ -32,3 +32,23 @@ inside those 48 hours never count. The quest page and the market show "New accou
 - Once per wallet, never resets.
 
 Rules in [`apps/quests`](../apps/quests/).
+
+## Quest 6: Show your rarest card
+
+- Post your rarest card on X from the account linked to your wallet, with both lines of the quest text:
+  "this is my rarest @primatelegends card rn" and "Don't sleep on these, don't fade the legends" (case, curly
+  quotes and spacing don't matter).
+- Every claim is reviewed by a person (bots and farmers are around). Approved posts get a random **clan pack**
+  (Onyx, Earth or Sakura). Once per wallet.
+
+## Quest 7: Send a card to a friend
+
+- Enter your friend's wallet and X handle. One **random card** of yours (any rarity, only cards free to move:
+  not listed, not in escrow, past their holds) goes to them right away, with no transfer fee.
+- Your **Recruit Pack** arrives after 24 hours, or **12 hours** if you post on X tagging your friend and
+  @PrimateLegends. The post must still be up when the pack is paid; otherwise it waits the full 24 hours.
+- Each friend can receive only once: the same wallet or the same X account never counts twice. You can't send
+  to yourself, and an X handle linked to another wallet doesn't count for this friend.
+- New accounts wait 48 hours, as for quests 4 and 5. Once per wallet.
+
+Rules for both in [`apps/quests`](../apps/quests/).

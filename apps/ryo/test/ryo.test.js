@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Ledger, SUPPLY, airdropSplit } from '../src/ledger.js';
-import { listingProblem, vaultQuote, vaultSalesLeft, ryoFromEth, PRICE_MIN } from '../src/market.js';
+import { listingProblem, vaultQuote, vaultSalesLeft, ryoFromEth, PRICE_MIN, vaultRepricing, vaultArbitrage, vaultBid } from '../src/market.js';
 import { claimKind, canClaim, streak, streakReward } from '../src/claims.js';
 import { redeemProblem, ownerNotice, postText, normalizeCode } from '../src/claim-codes.js';
 
@@ -99,4 +99,23 @@ test('vault grant band price: inside the band, rounded to 50', () => {
   for (let i = 0; i < 200; i++) { const p = bandPrice(3000, 8000); assert.ok(p >= 3000 && p <= 8000 && p % 50 === 0); }
   assert.throws(() => bandPrice(500, 8000), /bad-price/);
   assert.throws(() => bandPrice(8000, 3000), /bad-price/);
+});
+
+test('vault listings follow the estimate; a stale one would be an arbitrage', () => {
+  const V = '0xvault';
+  const listings = [{ card: 1, seller: V, price: 3400 }, { card: 2, seller: V, price: 4800 }, { card: 3, seller: '0xp', price: 1000 }];
+  const est = { 1: 4800, 2: 4800, 3: 9000 };
+  assert.deepEqual(vaultRepricing(listings, c => est[c], V), [{ card: 1, from: 3400, to: 4800 }], 'only stale vault listings; player prices stay');
+  assert.equal(vaultArbitrage(3400, 4800), true, 'buy at 3,400, sell back for 3,840');
+  assert.equal(vaultArbitrage(4800, 4800), false);
+});
+
+test('the vault bids 20% under the floor for Common, Uncommon and Rare; Legendary and Astral keep the quote', () => {
+  const floors = { common: 2300, uncommon: 7500, any: 2300 };
+  assert.equal(vaultBid({ rarity: 'common', estimate: 6000 }, floors), 1840, 'never above 80% of the common floor');
+  assert.equal(vaultBid({ rarity: 'common', estimate: 1000 }, floors), 800, 'a cheap card keeps its own 80%');
+  assert.equal(vaultBid({ rarity: 'rare', estimate: 40000 }, floors), 1840, 'no rare listed: the cheapest card is the reference');
+  assert.equal(vaultBid({ rarity: 'rare', estimate: 40000 }, {}), 32000, 'empty market: 115% of the estimate caps nothing below the quote');
+  assert.equal(vaultBid({ rarity: 'legendary', estimate: 200000 }, floors), 160000);
+  assert.equal(vaultBid({ rarity: 'phantom', estimate: 800000 }, floors), 640000);
 });

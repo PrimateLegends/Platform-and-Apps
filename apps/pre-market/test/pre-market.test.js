@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { parseAmount, formatAmount, splitPayment, formatFee, CURRENCIES } from '../src/money.js';
 import { preMarketId, likelyClan, createListing, query, facets, floor } from '../src/listings.js';
 import { reserve, release, paymentPlan, settle, RESERVATION_MS } from '../src/checkout.js';
+import * as topUp from '../src/eth-topup.js';
 import { linkMessage, addLink, defaultPayout, isLinked, canUse, associatedTokenAccount, decodeBase58, encodeBase58, MAX_LINKS } from '../src/solana-profile.js';
 
 const SELLER = '0x' + 'a'.repeat(40), BUYER = '0x' + 'b'.repeat(40), OTHER = '0x' + 'c'.repeat(40);
@@ -138,4 +139,39 @@ test('base58 round trip and USDC token accounts match the official Solana librar
   for (const [owner, ata] of Object.entries(vectors)) {
     assert.equal(await associatedTokenAccount(owner, CURRENCIES.usdc.mint), ata);
   }
+});
+
+test('pay the rest with ETH: quote rules (10% own $RYO, rate, minimum)', () => {
+  const listing = { price: 50_000, seller: '0xs' };
+  const q = topUp.quote(listing, { wallet: '0xb', balance: 20_000 });
+  assert.equal(q.ok, true);
+  assert.equal(q.shortfall, 30_000);
+  assert.equal(topUp.formatEth(q.wei), '0.00294', '100,000 $RYO = 0.0098 ETH');
+  assert.equal(q.credit, 30_000);
+  assert.equal(topUp.quote(listing, { wallet: '0xb', balance: 4_999 }).reason, 'need-more-ryo', 'under 10% of the price: no ETH option');
+  assert.equal(topUp.quote(listing, { wallet: '0xb', balance: 60_000 }).reason, 'enough-ryo');
+  assert.equal(topUp.quote(listing, { wallet: '0xs', balance: 9 }).reason, 'own-listing');
+  const small = topUp.quote({ price: 5_000, seller: '0xs' }, { wallet: '0xb', balance: 1_000 });
+  assert.equal(topUp.formatEth(small.wei), '0.00045', 'the minimum payment applies');
+  assert.ok(small.credit > small.shortfall, 'and the whole payment is credited');
+});
+
+test('pay the rest with ETH: the hold, the chain check and settlement', () => {
+  const now = 1_000_000;
+  const holds = [{ buyer: '0xb', until: now + topUp.HOLD_MS }];
+  assert.equal(topUp.actionAllowed(holds, '0xc', now), false, 'nobody else can buy during the hold');
+  assert.equal(topUp.actionAllowed(holds, '0xb', now), true);
+  assert.equal(topUp.actionAllowed(holds, '0xc', now + topUp.HOLD_MS), true, 'it ends by itself');
+  const base = { buyer: '0xB', vault: '0xV', wei: 100n, head: 50, usedTx: new Set(), hash: '0x1' };
+  const tx = { from: '0xb', to: '0xv', value: 100n, status: 1, block: 49 };
+  assert.equal(topUp.checkPayment(tx, base), 'confirmed');
+  assert.equal(topUp.checkPayment({ ...tx, block: 50 }, base), 'pending', '1 confirmation is not enough');
+  assert.equal(topUp.checkPayment({ ...tx, block: null }, base), 'pending');
+  assert.equal(topUp.checkPayment({ ...tx, value: 99n }, base), 'underpaid');
+  assert.equal(topUp.checkPayment({ ...tx, from: '0xc' }, base), 'wrong-sender');
+  assert.equal(topUp.checkPayment({ ...tx, status: 0 }, base), 'reverted');
+  assert.equal(topUp.checkPayment(tx, { ...base, usedTx: new Set(['0x1']) }), 'used');
+  const pay = { buyer: '0xb', price: 50_000, seller: '0xs', paidWei: 30_000n * topUp.WEI_PER_RYO };
+  assert.deepEqual(topUp.settle({ price: 50_000, seller: '0xs', status: 'active' }, pay, now, holds), { credit: 30_000, buy: true });
+  assert.deepEqual(topUp.settle({ status: 'sold' }, pay, now), { credit: 30_000, buy: false, reason: 'card-gone' }, 'card gone: the $RYO stays with the buyer');
 });

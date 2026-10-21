@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { FRONTS } from '../src/fronts.js';
-import { TIERS, COPY_CAP, pick, claimReveal, planReveal, planClanReveal, promoUnique, front, CLAIM_REVEAL_ODDS } from '../src/reveal.js';
+import { TIERS, COPY_CAP, pick, claimReveal, planReveal, planClanReveal, promoUnique, front, CLAIM_REVEAL_ODDS, planSpreadReveal } from '../src/reveal.js';
 import { furFamily, clansFromFur } from '../src/clans.js';
 
 // Small seeded generator so every run is the same.
@@ -104,4 +104,20 @@ test('claim promo: unique 1 of 1 cards land on the scheduled claims only', () =>
   assert.equal(promoUnique(1, opts), 0);
   assert.equal(promoUnique(2, opts), 539);
   assert.equal(promoUnique(4, { ...opts, taken: new Set([538, 539]) }), 0, 'all taken: a normal claim');
+});
+
+test('least-used reveal: every sealed card gets the emptiest front of its tier', () => {
+  const commons = FRONTS.filter(f => f.rarity === 'common');
+  const used = new Map(commons.slice(0, -1).map(f => [f.n, 3]));   // every Common front has 3 copies but the last one
+  const sealed = [{ no: 1, rarity: 'common', type: 'attack' }, { no: 2, rarity: 'legendary' }, { no: 3, rarity: 'uncommon' }];
+  const { plan, used: after, short } = planSpreadReveal(sealed, used, { rnd: () => 0.5 });
+  assert.equal(plan.length, 3); assert.deepEqual(short, []);
+  for (const p of plan) {
+    const card = sealed.find(c => c.no === p.no);
+    assert.ok(TIERS[card.rarity].includes(front(p.front).rarity), 'tier rule kept for #' + p.no);
+    assert.equal(used.get(p.front) || 0, 0, 'a front with 0 copies was picked for #' + p.no);
+  }
+  assert.equal(new Set(plan.map(p => p.front)).size, 3, 'no two cards share a front while empty ones are left');
+  assert.equal(used.get(plan[0].front), undefined, 'the input map is not changed');
+  assert.equal(after.get(plan[0].front), 1);
 });

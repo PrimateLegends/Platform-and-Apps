@@ -45,3 +45,34 @@ one purchase only.
   if a fee is ever turned on. Immutable fee (max 10%) and vault, no owner, keeps nothing.
 
 The rules above are implemented as plain modules in [`apps/pre-market`](../apps/pre-market/).
+
+## Pay the rest with ETH
+
+A buyer short of $RYO for a listing can pay the missing part in ETH, as long as their own $RYO covers **at least
+10% of the price**.
+
+- Rate: 100,000 $RYO = 0.0098 ETH. Minimum payment: 0.00045 ETH (the whole payment is credited).
+- The listing is **held for the buyer for 30 seconds** while they confirm in their wallet, and for as long as the
+  transaction is confirming once it's sent. Meanwhile nobody else can buy it, accept an offer on it, cancel or
+  reprice it.
+- The ETH goes to the platform vault. After 2 confirmations the buyer is credited the matching $RYO and the
+  ordinary purchase runs: the seller gets the full price minus the usual royalty. The sale looks like any other.
+- If the card is gone by then, the credited $RYO stays in the buyer's wallet. ETH is never lost and never refunded
+  on-chain.
+
+Rules in [`apps/pre-market/src/eth-topup.js`](../apps/pre-market/src/eth-topup.js) and
+[`primate_market.eth_topup`](../services/market-engine/src/primate_market/eth_topup.py); on-chain draft in
+[`EthTopUpRouter.sol`](../contracts/EthTopUpRouter.sol).
+
+## The vault bid and the market floor
+
+The vault buys any card, but never above the market for the common tiers: for Common, Uncommon and Rare cards it
+pays the lower of 80% of the estimate and **80% of the floor** (cheapest listing) of that rarity. With no listing
+of that rarity, the cheapest listing of any card is the reference. Legendary and Astral cards keep 80% of the
+estimate. The vault's own listings follow the current estimate, so buying from the vault and selling straight
+back never pays (`apps/ryo`: `vaultBid`, `vaultRepricing`).
+
+## King of the Hill
+
+The market shows the 3 wallets with the most card volume of the last 24 hours. See
+[docs/progression.md](progression.md).

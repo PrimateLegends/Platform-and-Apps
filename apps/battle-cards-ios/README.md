@@ -21,6 +21,7 @@ repository yet.
 | [`BattleCards/MarketFilters.swift`](BattleCards/MarketFilters.swift) | Filters and sorting, ported from [`apps/pre-market`](../pre-market/) |
 | [`BattleCards/InventoryView.swift`](BattleCards/InventoryView.swift) | Inventory screen |
 | [`BattleCards/PreMarketView.swift`](BattleCards/PreMarketView.swift) | Pre-Market screen |
+| [`BattleCards/PlayerLevel.swift`](BattleCards/PlayerLevel.swift) | Player level from XP (curve of [`apps/progression`](../progression/)), XP bar and level badge |
 | [`BattleCards/BattleCardsApp.swift`](BattleCards/BattleCardsApp.swift) | App entry point with the two tabs |
 
 ## To try it

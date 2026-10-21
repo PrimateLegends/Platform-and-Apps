@@ -2,6 +2,30 @@
 
 All notable changes to this repository. Versions follow the live site's milestones.
 
+## 0.16.0
+
+### Added
+- **Levels and XP** (`docs/progression.md`): a LoL-style curve (each step +100 XP, 280 → 380 → 480 …) running up to
+  level 300, and XP recomputed from each wallet's full activity with daily caps on repeatable actions.
+  New app `apps/progression`: `standing`, `scoreWallet`, `leaderboard`. 5 tests. Python:
+  `primate_market.progression`. Swift: `PlayerLevel`, `XPBar`, `LevelBadge` in the iOS draft.
+- **Collector Boost**: holders of partner NFTs (Normies +50%, seven more collections +25%) add a share of their
+  earned XP once per collection, only when they ask for the wallet check. `apps/progression`: `checkWallet`,
+  `displayOrder`, `nextFridayUtc`. Contract draft `CollectorBoost.sol` with EVM tests.
+- **King of the Hill**: the top 3 wallets by card volume of the last 24 hours on the market.
+  `apps/progression`: `kingsOfTheHill`; Python: `kings_of_the_hill`.
+- **Quest 6 "Show your rarest card"** and **Quest 7 "Send a card to a friend"** (`docs/quests.md`).
+  `apps/quests`: `rarestPostOk`, `friendProblem`, `friendPayAt`, `pickCardToSend`. 3 tests.
+- **Pay the rest with ETH** (`docs/pre-market.md`): buyers covering at least 10% of a price in $RYO pay the rest in
+  ETH; the listing is held for them while the payment confirms. `apps/pre-market`: `eth-topup.js`. 2 tests.
+  Python: `primate_market.eth_topup`. Contract draft `EthTopUpRouter.sol` (signed quotes, one use each) with EVM tests.
+- **Least-used reveal**: every sealed card gets the front of its tier with the fewest copies.
+  `apps/reveal`: `planSpreadReveal`. 1 test.
+
+### Changed
+- The vault never bids above the market for Common, Uncommon and Rare cards: at most 80% of that rarity's floor.
+  Its own listings follow the current estimate. `apps/ryo`: `vaultBid`, `vaultRepricing`, `vaultArbitrage`. 2 tests.
+
 ## 0.15.0
 
 ### Added

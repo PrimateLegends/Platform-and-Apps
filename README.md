@@ -34,13 +34,14 @@
 | [Legendary Cards preview](apps/legendary-cards-preview/) | Browser-only preview of the card vault: sealed packs, daily claims with a 7-day streak, card hints and the collection grid | Preview |
 | [Card Battles](apps/card-battles/) | Rules engine for the two-player card game (rules v1): KI and spare KI, attack token, CHALLENGE, combat keywords, equipment, ASCEND, half-deck stake, scoring and Honor | In development |
 | [Card reveal](apps/reveal/) | Reveal rules: hint-true fronts, tiers, copy caps, clans by fur colour, 35% of new claims revealed | Live |
-| [Pre-Market](apps/pre-market/) | Rules for trading sealed cards before they go on-chain: listings, filters, wallet-to-wallet checkout, linked Solana wallets | In development |
+| [Pre-Market](apps/pre-market/) | Rules for trading sealed cards before they go on-chain: listings, filters, wallet-to-wallet checkout, linked Solana wallets, pay the rest of a $RYO purchase with ETH | In development |
 | [Card transfers](apps/transfers/) | Send cards to any wallet: 5 $RYO per card, holds, burst check, recipient notices, your activity | Live |
 | [Bounties](apps/bounties/) | Opening Bounty bags: 1 scarce card you don't own yet + 10,000 to 25,000 $RYO | Live |
-| [Quests](apps/quests/) | Quest board: paused quests, Quest 5 Onyx Recruiting | Live |
-| [Market engine](services/market-engine/) (Python) | $RYO ledger, card offers, airdrop split and rebalance, activity feed card references, holders ranking, $RYO swap quotes, card transfers | Live rules |
+| [Quests](apps/quests/) | Quest board: paused quests, Quest 5 Onyx Recruiting, Quest 6 Show your rarest card, Quest 7 Send a card to a friend | Live |
+| [Progression](apps/progression/) | Player levels (LoL-style curve up to level 300), XP from activity with daily caps, Collector Boost for partner NFT holders, King of the Hill | Live |
+| [Market engine](services/market-engine/) (Python) | $RYO ledger, card offers, airdrop split and rebalance, activity feed card references, holders ranking, $RYO swap quotes, card transfers, levels and XP, King of the Hill, ETH top-up quotes | Live rules |
 | [Card catalog](services/card-balance/) (Python) | All 205 card fronts with their KI, stats and text, checked against the stat budget, keyword vocabulary, deck rules and clan accents | Rules v1 |
-| [Battle Card Legends for iOS](apps/battle-cards-ios/) | SwiftUI draft of the iPhone and iPad app: Inventory and Pre-Market screens | Draft, not compiled yet |
+| [Battle Card Legends for iOS](apps/battle-cards-ios/) | SwiftUI draft of the iPhone and iPad app: Inventory and Pre-Market screens, player level badge and XP bar | Draft, not compiled yet |
 
 ## Pre-Market
 
@@ -67,6 +68,14 @@ Every card in the game is visible on the Pre-Market: listings first, then every 
 
 Cards can be sent to any wallet for 5 $RYO each ([docs/transfers.md](docs/transfers.md)); Bounty bags open into a scarce card you don't own yet plus 10,000 to 25,000 $RYO ([docs/bounties.md](docs/bounties.md)); Quest 5 Onyx Recruiting gives a free revealed card for 3 different Onyx purchases ([docs/quests.md](docs/quests.md)).
 
+## Levels, XP and the Collector Boost
+
+Every player has a level: each step costs 100 XP more than the last (280, 380, 480, ...), up to level 300. XP comes from everything a wallet did on the site (claims, packs, trades, offers, swaps, transfers, quests), recomputed from its full history, so early players start ahead. Holding a partner NFT (Normies +50%, seven more collections +25%) adds a share of your earned XP once per collection, when you ask for the check. The market shows the King of the Hill: the top 3 traders by card volume of the last 24 hours. Details in [docs/progression.md](docs/progression.md).
+
+## Quests 6 and 7, pay the rest with ETH
+
+Quest 6 pays a clan pack for a post of your rarest card (reviewed by hand); Quest 7 sends one random card of yours to a friend and pays a Recruit Pack after 24 hours, or 12 with a post tagging them ([docs/quests.md](docs/quests.md)). A buyer whose $RYO covers at least 10% of a card can pay the rest in ETH; the listing is held for them while the payment confirms ([docs/pre-market.md](docs/pre-market.md)).
+
 ## Contracts
 
 | Contract | Purpose |
@@ -78,6 +87,8 @@ Cards can be sent to any wallet for 5 $RYO each ([docs/transfers.md](docs/transf
 | [`RyoToken`](contracts/RyoToken.sol) | Fixed-supply $RYO ERC-20: 1,000,000,000 minted once, no mint, no owner |
 | [`OfferBook`](contracts/OfferBook.sol) | $RYO offers on Legendary Cards: escrowed bids, one-transaction accept, reclaim after expiry |
 | [`CardCourier`](contracts/CardCourier.sol) | External card transfers after migration: up to 20 cards in one transaction, flat $RYO fee per card to the vault |
+| [`EthTopUpRouter`](contracts/EthTopUpRouter.sol) | Pay the rest of a $RYO purchase with ETH: signed quotes, one use each, ETH forwarded to the vault in the same call |
+| [`CollectorBoost`](contracts/CollectorBoost.sol) | On-chain record of Collector Boost claims: holders of partner ERC-721s claim each collection once |
 
 All drafts, not audited, not deployed. They compile with solc 0.8.28 and run in an in-process EVM in `npm test`.
 
@@ -144,12 +155,13 @@ Node 18 or newer and Python 3.10 or newer. The apps and the engine have no depen
 │   ├── pre-market/                Pre-Market rules: listings, checkout, linked Solana wallets
 │   ├── transfers/                 card transfers: fee, holds, burst check, activity
 │   ├── bounties/                  opening Bounty bags
-│   ├── quests/                    quest board, Quest 5 Onyx Recruiting
+│   ├── quests/                    quest board, quests 4 to 7
+│   ├── progression/               levels, XP, Collector Boost, King of the Hill
 │   └── battle-cards-ios/          SwiftUI draft of the iOS app (Inventory, Pre-Market)
 ├── services/
 │   ├── market-engine/             Python: $RYO ledger, offers, airdrop rebalance, activity feed
 │   └── card-balance/              Python: the 205-card catalog and its balance rules
-├── contracts/                     Solidity drafts (LegendaryCards, RyoToken, OfferBook, CardCourier, PreMarketSettlement, HonorLedger, BattleStakes) + EVM tests
+├── contracts/                     Solidity drafts (LegendaryCards, RyoToken, OfferBook, CardCourier, EthTopUpRouter, CollectorBoost, PreMarketSettlement, HonorLedger, BattleStakes) + EVM tests
 ├── integrations/                  OpenClaw skill, ChatGPT app (planned)
 ├── docs/                          architecture, Card Battles, Pre-Market, App Store prospect, roadmap
 └── scripts/                       local server, repository checks, contract compiler
