@@ -460,3 +460,30 @@ test('CollectorBoost: holders claim each partner collection once; the owner mana
   await boost.call('setPartner', [mayc.at.toString(), 0]);
   assert.equal((await boost.call('claimed', [alice.toString(), mayc.at.toString()])).value, true, 'removing a partner keeps past claims');
 });
+
+test('DuelRecords: referee-signed Katana Master results, once per match, with a win/loss tally', async () => {
+  const { fund, deploy } = await chain();
+  const owner = addr(0x0c), alice = addr(0xa3), bob = addr(0xb4);
+  for (const a of [owner, alice, bob]) await fund(a);
+  const referee = new Wallet('0x' + '55'.repeat(32));
+  const duels = await deploy('DuelRecords.sol', 'DuelRecords', [referee.address], owner);
+  const A = alice.toString(), B = bob.toString();
+  const matchId = keccak256(getBytes('0x' + '0d'.repeat(32)));
+  const sign = async (signer, id, p0, p1, w, w0, w1, h) => signer.signMessage(getBytes((await duels.call('resultDigest', [id, p0, p1, w, w0, w1, h])).value));
+  const HASH = 0x40161b3d;   // the replay hash of the duel (apps/katana-master fixtures)
+  const good = await sign(referee, matchId, A, B, 0, 2, 1, HASH);
+  await assert.rejects(duels.call('record', [matchId, A, B, 1, 2, 1, HASH, good], { from: bob }), { revert: 'BadResult' }, 'round wins must match the winner');
+  await assert.rejects(duels.call('record', [matchId, A, B, 0, 2, 1, HASH + 1, good], { from: bob }), { revert: 'BadSignature' }, 'any changed field breaks the signature');
+  const forged = await sign(new Wallet('0x' + '66'.repeat(32)), matchId, A, B, 0, 2, 1, HASH);
+  await assert.rejects(duels.call('record', [matchId, A, B, 0, 2, 1, HASH, forged], { from: alice }), { revert: 'BadSignature' }, 'only the referee signs');
+  await assert.rejects(duels.call('record', [matchId, A, A, 0, 2, 1, HASH, good], { from: alice }), { revert: 'SamePlayer' });
+  const r = await duels.call('record', [matchId, A, B, 0, 2, 1, HASH, good], { from: bob });   // anyone may submit it
+  assert.equal(r.logs.find(l => l.name === 'DuelRecorded').args.replayHash, BigInt(HASH));
+  await assert.rejects(duels.call('record', [matchId, A, B, 0, 2, 1, HASH, good], { from: alice }), { revert: 'AlreadyRecorded' });
+  const draw = keccak256(getBytes('0x' + '0e'.repeat(32)));
+  await duels.call('record', [draw, B, A, 2, 1, 1, 7, await sign(referee, draw, B, A, 2, 1, 1, 7)], { from: alice });
+  const ta = (await duels.call('tally', [A])).value, tb = (await duels.call('tally', [B])).value;
+  assert.deepEqual([...ta].map(Number), [1, 0, 1]);
+  assert.deepEqual([...tb].map(Number), [0, 1, 1]);
+  assert.equal((await duels.call('resultOf', [matchId])).value.winner, 0n);
+});

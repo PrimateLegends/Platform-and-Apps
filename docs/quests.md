@@ -52,3 +52,25 @@ Rules in [`apps/quests`](../apps/quests/).
 - New accounts wait 48 hours, as for quests 4 and 5. Once per wallet.
 
 Rules for both in [`apps/quests`](../apps/quests/).
+
+## Quest 8: Reinforce your deck
+
+- The quest names one clan for you: of the clans that have a card for sale right now, the one you hold the fewest
+  cards of (your vault, your listings and cards in escrow all count). A tie goes to the clan with more cards on
+  sale, so the target is always easy to buy into.
+- Buy any card that carries that clan, from a listing or with an accepted offer, and **1 card of that clan, already
+  revealed**, drops into your vault (Recruit Pack odds). Once per wallet; new accounts wait 48 hours.
+- The market opens filtered on your clan from the quest row, and a pop-up tells you when it's done.
+
+## Your X account
+
+- Set the X handle shown on your profile from the quests page: `@Name`, `Name` or an x.com / twitter.com link all
+  work. A handle set by hand is shown as **Not verified yet** and doesn't count for the follow quest.
+- You can change it again after 72 hours. A handle already linked to another wallet stays with that wallet, and
+  only the team wallet can set @PrimateLegends.
+
+## Closed quests
+
+Quest 3 (follow) and Quest 6 (rarest card) ran out of spots and are closed. Claims made before stay paid.
+
+Rules in [`apps/quests/src/deck-and-handle.js`](../apps/quests/src/deck-and-handle.js).

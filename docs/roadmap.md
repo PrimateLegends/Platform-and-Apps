@@ -24,6 +24,10 @@ but may change. **Planned** is not built yet.
 | Agents | MCP server exposing the read-only vault API to any agent | Planned |
 | Game | Card Battles rules engine (rounds, Ki, keywords, Heroes, scoring) | In development |
 | Game | Seasonal Honor on-chain (HonorLedger) | Draft |
+| Game | [Katana Master](katana-master.md): sword duels vs a bot (Easy / Normal / Hard), 6 arenas, Katana Brawl cards | In development |
+| Game | Katana Master Private Match and Fight For ETH, with referee replays and [DuelRecords](../contracts/DuelRecords.sol) | Planned |
+| Market | Primate Swap: trade Primates for $RYO or WETH offers by rarity | Coming soon |
+| Economy | $RYO unlock calendar from 2026-11-08 ([rules](ryo-unlocks.md)) | Live |
 | Game | Battle Card Legends for iPhone and iPad: inventory and Pre-Market first, battles after ([prospect](battle-cards-app-store.md), [draft](../apps/battle-cards-ios/)) | Prospect |
 | Market | Pre-Market: trade sealed cards wallet to wallet in ETH or USDC on Solana ([rules](pre-market.md)) | In development |
 | Market | Linked Solana wallets (up to 3 per profile) | In development |

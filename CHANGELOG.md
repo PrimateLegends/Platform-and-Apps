@@ -2,6 +2,30 @@
 
 All notable changes to this repository. Versions follow the live site's milestones.
 
+## 0.17.0
+
+### Added
+- **Katana Master** (`docs/katana-master.md`), the sword-duel game coming to the site: best of three, combos,
+  Ki, teleports, streaks, the Shadow Kick, up to 5 Katana Brawl cards once per match, 6 arenas and three bot
+  levels. Screenshots in `apps/katana-master/screenshots`.
+  New app `apps/katana-master`: the deep-frozen rule table, `cutDamage`, `gainKi` (banked x1.3), `teleport`,
+  `isPerfectBlock`, `CardLedger` (once per match, Last Breath fires on its own under 2 HP), `InputGuard` (script
+  events, turbo, machine rate and rhythm), `DIFFICULTY` + `cardPlan`, and the deterministic referee `replay` that
+  turns both players' input logs into the result and a replay hash. 10 tests, shared fixtures.
+- **Duel referee** (Python): `services/duel-referee`, a separate integer-only implementation of the referee; it
+  replays the same fixtures to the same hashes. 5 tests, now part of `npm run test:engine` and CI.
+- Contract draft **`DuelRecords.sol`**: referee-signed duel results, once per match id, bound to the contract and
+  chain, low-s signatures only, with a win/loss/draw tally per player. EVM test.
+- Swift: `DuelRecord`, `DuelRecordRow` and `KatanaRules` in the iOS draft.
+- **Quest 8 "Reinforce your deck"** and the **X handle** on the quests page (`docs/quests.md`).
+  `apps/quests`: `deckTarget`, `deckCompletes`, `cleanXHandle`, `handleProblem`, `handleLockLabel`. 4 tests.
+- **$RYO unlock calendar** (`docs/ryo-unlocks.md`): 2,000,000 per wallet on 2026-11-08, +40% a day, 3 tranches
+  shown. `apps/ryo`: `trancheOf`, `unlockDay`, `calendar`. 3 tests. Python: `primate_market.unlocks`.
+- **Pack opened** rows in the activity feed: `primate_market.activity.pack_opened` picks the best card as the
+  thumbnail. 5 Python tests (with the unlock calendar).
+
+### Changed
+- Quests 3 (follow) and 6 (rarest card) are closed: `CLOSED_QUESTS`.
 ## 0.16.0
 
 ### Added

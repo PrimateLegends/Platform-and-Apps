@@ -12,6 +12,7 @@
   <a href="https://primatelegends.world">primatelegends.world</a> ·
   <a href="https://x.com/primatelegends">@primatelegends</a> ·
   <a href="docs/architecture.md">Architecture</a> ·
+  <a href="docs/katana-master.md">Katana Master</a> ·
   <a href="docs/card-battles.md">Card Battles</a> ·
   <a href="docs/pre-market.md">Pre-Market</a> ·
   <a href="docs/card-reveal.md">Card reveal</a> ·
@@ -32,17 +33,43 @@
 | App | What it is | Status |
 | --- | --- | --- |
 | [Legendary Cards preview](apps/legendary-cards-preview/) | Browser-only preview of the card vault: sealed packs, daily claims with a 7-day streak, card hints and the collection grid | Preview |
+| [Katana Master](apps/katana-master/) | Sword-duel game: frozen rules, damage and Ki, the once-per-match card ledger, input guard, bot levels, and the deterministic referee that replays input logs | In development |
 | [Card Battles](apps/card-battles/) | Rules engine for the two-player card game (rules v1): KI and spare KI, attack token, CHALLENGE, combat keywords, equipment, ASCEND, half-deck stake, scoring and Honor | In development |
 | [Card reveal](apps/reveal/) | Reveal rules: hint-true fronts, tiers, copy caps, clans by fur colour, 35% of new claims revealed | Live |
 | [Pre-Market](apps/pre-market/) | Rules for trading sealed cards before they go on-chain: listings, filters, wallet-to-wallet checkout, linked Solana wallets, pay the rest of a $RYO purchase with ETH | In development |
 | [Card transfers](apps/transfers/) | Send cards to any wallet: 5 $RYO per card, holds, burst check, recipient notices, your activity | Live |
 | [Bounties](apps/bounties/) | Opening Bounty bags: 1 scarce card you don't own yet + 10,000 to 25,000 $RYO | Live |
-| [Quests](apps/quests/) | Quest board: paused quests, Quest 5 Onyx Recruiting, Quest 6 Show your rarest card, Quest 7 Send a card to a friend | Live |
+| [Quests](apps/quests/) | Quest board: closed quests, Quest 5 Onyx Recruiting, Quest 7 Send a card to a friend, Quest 8 Reinforce your deck, your X handle | Live |
 | [Progression](apps/progression/) | Player levels (LoL-style curve up to level 300), XP from activity with daily caps, Collector Boost for partner NFT holders, King of the Hill | Live |
-| [Market engine](services/market-engine/) (Python) | $RYO ledger, card offers, airdrop split and rebalance, activity feed card references, holders ranking, $RYO swap quotes, card transfers, levels and XP, King of the Hill, ETH top-up quotes | Live rules |
+| [Market engine](services/market-engine/) (Python) | $RYO ledger, card offers, airdrop split and rebalance, activity feed (card references, Pack opened rows), holders ranking, $RYO swap quotes, card transfers, levels and XP, King of the Hill, ETH top-up quotes, the $RYO unlock calendar | Live rules |
+| [Duel referee](services/duel-referee/) (Python) | Server-side replay of Katana Master duels from both input logs | Draft |
 | [Card catalog](services/card-balance/) (Python) | All 205 card fronts with their KI, stats and text, checked against the stat budget, keyword vocabulary, deck rules and clan accents | Rules v1 |
-| [Battle Card Legends for iOS](apps/battle-cards-ios/) | SwiftUI draft of the iPhone and iPad app: Inventory and Pre-Market screens, player level badge and XP bar | Draft, not compiled yet |
+| [Battle Card Legends for iOS](apps/battle-cards-ios/) | SwiftUI draft of the iPhone and iPad app: Inventory and Pre-Market screens, player level badge and XP bar, Katana Master duel record | Draft, not compiled yet |
 
+## Katana Master
+
+<p align="center">
+  <img src="apps/katana-master/screenshots/main-menu.png" alt="Katana Master" width="880">
+</p>
+
+**Coming next: sword duels between primates.** Pick your primate (each clan fights with its own blade), an arena
+and up to 5 Katana Brawl cards, then fight a bot on Easy, Normal or Hard, best of three. Combos, PERFECT blocks,
+dashes and back flips, teleports, five-hit streaks and the Shadow Kick; every card works once per match.
+Private Match and Fight For ETH come after.
+
+<p align="center">
+  <img src="apps/katana-master/screenshots/sky-rush.png" alt="A five-hit streak" width="290">
+  <img src="apps/katana-master/screenshots/shadow-kick.png" alt="Shadow Kick" width="290">
+  <img src="apps/katana-master/screenshots/final-round-storm.png" alt="The final round under a storm" width="290">
+</p>
+<p align="center">
+  <img src="apps/katana-master/screenshots/arenas.png" alt="The six arenas" width="880">
+</p>
+
+Fair play is built in layers: frozen rules and an input guard in the browser, a **referee** that replays both
+players' input logs to the result that counts (JavaScript in [`apps/katana-master`](apps/katana-master/), Python
+in [`services/duel-referee`](services/duel-referee/), same hash for the same log), and
+[`DuelRecords`](contracts/DuelRecords.sol) for referee-signed results on-chain. Guide: [docs/katana-master.md](docs/katana-master.md).
 ## Pre-Market
 
 Players trade sealed Legendary Cards before cards go on-chain, paying each other directly in ETH or
@@ -76,6 +103,13 @@ Every player has a level: each step costs 100 XP more than the last (280, 380, 4
 
 Quest 6 pays a clan pack for a post of your rarest card (reviewed by hand); Quest 7 sends one random card of yours to a friend and pays a Recruit Pack after 24 hours, or 12 with a post tagging them ([docs/quests.md](docs/quests.md)). A buyer whose $RYO covers at least 10% of a card can pay the rest in ETH; the listing is held for them while the payment confirms ([docs/pre-market.md](docs/pre-market.md)).
 
+## Quest 8, your X handle and the $RYO unlock calendar
+
+Quest 8 "Reinforce your deck" names the clan you hold the fewest cards of (among clans on sale); buying any card
+of it drops a revealed card of that clan into your vault. Your X handle can be set from the quests page (72 hours
+between changes). Quests 3 and 6 are closed. The activity feed shows **Pack opened** rows with the best card as
+the thumbnail ([docs/quests.md](docs/quests.md)). From 2026-11-08, $RYO unlocks for selling and sending in daily
+tranches: 2,000,000 per wallet on day 1, +40% a day ([docs/ryo-unlocks.md](docs/ryo-unlocks.md)).
 ## Contracts
 
 | Contract | Purpose |
@@ -89,6 +123,7 @@ Quest 6 pays a clan pack for a post of your rarest card (reviewed by hand); Ques
 | [`CardCourier`](contracts/CardCourier.sol) | External card transfers after migration: up to 20 cards in one transaction, flat $RYO fee per card to the vault |
 | [`EthTopUpRouter`](contracts/EthTopUpRouter.sol) | Pay the rest of a $RYO purchase with ETH: signed quotes, one use each, ETH forwarded to the vault in the same call |
 | [`CollectorBoost`](contracts/CollectorBoost.sol) | On-chain record of Collector Boost claims: holders of partner ERC-721s claim each collection once |
+| [`DuelRecords`](contracts/DuelRecords.sol) | Katana Master results, once per match and only with the referee's signature, with the replay hash and a win/loss/draw tally |
 
 All drafts, not audited, not deployed. They compile with solc 0.8.28 and run in an in-process EVM in `npm test`.
 
@@ -140,7 +175,7 @@ git clone https://github.com/PrimateLegends/Platform-and-Apps.git
 cd Platform-and-Apps
 npm start        # http://localhost:8080/apps/legendary-cards-preview/
 npm test             # apps + contracts (in-process EVM)
-npm run test:engine  # Python market engine
+npm run test:engine  # Python market engine, card catalog and duel referee
 npm run check        # assets resolve, no secrets or local paths
 ```
 
@@ -151,6 +186,7 @@ Node 18 or newer and Python 3.10 or newer. The apps and the engine have no depen
 ```
 ├── apps/
 │   ├── legendary-cards-preview/   card vault UI preview (ES modules, no build step)
+│   ├── katana-master/             sword-duel rules, input guard, bot levels, deterministic referee
 │   ├── card-battles/              rules engine + tests
 │   ├── pre-market/                Pre-Market rules: listings, checkout, linked Solana wallets
 │   ├── transfers/                 card transfers: fee, holds, burst check, activity
@@ -160,8 +196,9 @@ Node 18 or newer and Python 3.10 or newer. The apps and the engine have no depen
 │   └── battle-cards-ios/          SwiftUI draft of the iOS app (Inventory, Pre-Market)
 ├── services/
 │   ├── market-engine/             Python: $RYO ledger, offers, airdrop rebalance, activity feed
-│   └── card-balance/              Python: the 205-card catalog and its balance rules
-├── contracts/                     Solidity drafts (LegendaryCards, RyoToken, OfferBook, CardCourier, EthTopUpRouter, CollectorBoost, PreMarketSettlement, HonorLedger, BattleStakes) + EVM tests
+│   ├── card-balance/              Python: the 205-card catalog and its balance rules
+│   └── duel-referee/              Python: Katana Master referee (replays input logs)
+├── contracts/                     Solidity drafts (LegendaryCards, RyoToken, OfferBook, CardCourier, EthTopUpRouter, CollectorBoost, DuelRecords, PreMarketSettlement, HonorLedger, BattleStakes) + EVM tests
 ├── integrations/                  OpenClaw skill, ChatGPT app (planned)
 ├── docs/                          architecture, Card Battles, Pre-Market, App Store prospect, roadmap
 └── scripts/                       local server, repository checks, contract compiler
